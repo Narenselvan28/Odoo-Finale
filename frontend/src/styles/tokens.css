@@ -1,0 +1,72 @@
+/* Hallmark · macrostructure: CPQ Data Entry Workbench · tone: utilitarian · anchor hue: 250
+ * theme: custom (bespoke) · vibe: "precision engineering, high density, enterprise CPQ"
+ * display: Outfit 500/600 · body: IBM Plex Sans · outlier: none (strictly two fonts)
+ * axes: light / geometric-sans / cool · pre-emit critique: P5 H5 E5 S5 R5 V5
+ * states: default · hover · focus-visible · active · disabled · loading · error · success
+ * contrast: pass (40–41) · mobile: pass (34, 49, 50–57) · zero-arial: verified
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Typography Tokens */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Surfaces & Paper (High-Density Cool Slate Neutrals) */
+  --color-paper-0: #f8fafc;
+  --color-paper-1: #ffffff;
+  --color-paper-2: #f1f5f9;
+  --color-paper-3: #e2e8f0;
+  --color-paper-4: #cbd5e1;
+
+  /* Borders & Dividers */
+  --color-border-subtle: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-border-focus: #6366f1;
+
+  /* Typography Colors */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  --color-text-inverse: #ffffff;
+
+  /* Accent & Primary Actions (Precision Indigo) */
+  --color-accent: #4338ca;
+  --color-accent-hover: #3730a3;
+  --color-accent-active: #312e81;
+  --color-accent-subtle: #eef2ff;
+  --color-accent-border: #c7d2fe;
+
+  /* Semantic Feedback Tokens */
+  --color-success: #059669;
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #a7f3d0;
+
+  --color-warning: #d97706;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+
+  --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+
+  --color-info: #0284c7;
+  --color-info-bg: #f0f9ff;
+  --color-info-border: #bae6fd;
+
+  /* Radius & Shadows */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}

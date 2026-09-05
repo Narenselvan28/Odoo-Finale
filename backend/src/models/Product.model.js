@@ -18,4 +18,8 @@ const Product = sequelize.define("Product", {
   is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
 }, { tableName: "products", timestamps: false });
 
+const Category = require("./Category.model");
+
+Product.belongsTo(Category, { foreignKey: "category_id", as: "Category" });
+
 module.exports = Product;

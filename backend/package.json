@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "mern-mysql-backend",
   "version": "1.0.0",
   "description": "Express + MySQL backend (MERN-MySQL stack)",
@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "db:sync": "node src/config/syncDb.js"
+    "db:sync": "node src/config/syncDb.js",
+    "db:seed": "node src/config/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
