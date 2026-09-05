@@ -8,11 +8,13 @@ const {
 } = require("../controllers/user.controller");
 
 router.use(protect);
-router.use(requireAdmin);
 
+// Read users list for team dropdowns, assignment, and reporting
 router.get("/", getAllUsers);
 router.get("/:id", getUserById);
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+
+// Admin only mutations
+router.put("/:id", requireAdmin, updateUser);
+router.delete("/:id", requireAdmin, deleteUser);
 
 module.exports = router;

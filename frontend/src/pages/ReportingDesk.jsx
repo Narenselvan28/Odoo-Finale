@@ -46,7 +46,8 @@ const ReportingDesk = () => {
 
       setQuotations(quoteRes.data?.quotations || quoteRes.data || []);
       setCategories(catRes.data || []);
-      setUsers(usersRes.data || []);
+      const uData = usersRes.data?.users || usersRes.data || [];
+      setUsers(Array.isArray(uData) ? uData : []);
       setWarehouses(whRes.data || []);
     } catch (err) {
       showToast({
@@ -235,7 +236,7 @@ const ReportingDesk = () => {
             </label>
             <select className="select select-sm" value={repFilter} onChange={(e) => setRepFilter(e.target.value)}>
               <option value="ALL">All Sales Representatives</option>
-              {users.map((u) => (
+              {(Array.isArray(users) ? users : []).map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.name} ({u.role})
                 </option>

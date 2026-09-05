@@ -47,7 +47,8 @@ const PipelineKanban = () => {
       ]);
 
       const qList = quoteRes.data?.quotations || quoteRes.data || [];
-      const uList = usersRes.data || [];
+      const uData = usersRes.data?.users || usersRes.data || [];
+      const uList = Array.isArray(uData) ? uData : [];
 
       setQuotations(qList);
       setSalesReps(uList.filter((u) => u.role === "sales_rep" || u.role === "sales_manager"));
