@@ -20,7 +20,7 @@
         "customer_previous_quantity",
         "customer_previous_spend",
         "customer_avg_order_value",
-        "customer_purchase_frequency",
+        "customer_purchase_frequency",  
         "customer_total_previous_spend",
         "product_previous_transactions",
         "product_previous_quantity",
