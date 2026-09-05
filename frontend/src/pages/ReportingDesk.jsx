@@ -10,7 +10,6 @@ import {
   Filter,
   TrendingUp,
   Percent,
-  DollarSign,
   ShieldCheck,
   Truck,
   RefreshCw,
@@ -270,7 +269,7 @@ const ReportingDesk = () => {
         <div className="metric-card">
           <div className="metric-label">Confirmed Won Revenue</div>
           <div className="metric-value tnum" style={{ color: "var(--color-success)" }}>
-            ${metrics.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            ₹{metrics.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
           <div className="metric-delta positive">
             <TrendingUp size={12} />
@@ -579,13 +578,13 @@ const ReportingDesk = () => {
                       </span>
                     </td>
                     <td className="tnum">
-                      ${Number(q.subtotal || q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{Number(q.subtotal || q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="tnum" style={{ color: "var(--color-danger)" }}>
-                      -${Number(q.discount_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      -₹{Number(q.discount_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="tnum" style={{ fontWeight: 700 }}>
-                      ${Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="tnum" style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
                       {q.created_at ? new Date(q.created_at).toLocaleDateString() : "Recent"}

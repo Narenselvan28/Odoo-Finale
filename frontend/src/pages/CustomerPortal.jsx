@@ -268,7 +268,7 @@ const CustomerPortal = () => {
         <div className="stat-card">
           <div className="label">Quoted Total Value</div>
           <div className="value orange tnum">
-            ${currentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{currentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
@@ -342,7 +342,7 @@ const CustomerPortal = () => {
                           </td>
 
                           <td className="tnum" style={{ fontSize: "0.8125rem" }}>
-                            ${unitPrice.toFixed(2)}
+                            ₹{unitPrice.toFixed(2)}
                           </td>
 
                           <td className="tnum" style={{ fontWeight: 600 }}>
@@ -358,7 +358,7 @@ const CustomerPortal = () => {
                           </td>
 
                           <td className="tnum" style={{ fontWeight: 700 }}>
-                            ${lineTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ₹{lineTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         </tr>
                       );
@@ -379,10 +379,10 @@ const CustomerPortal = () => {
               }}
             >
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                All pricing in USD ($). Includes standard enterprise support SLA.
+                All pricing in INR (₹). Includes standard enterprise support SLA.
               </div>
               <div className="tnum" style={{ fontWeight: 800, fontSize: "1.125rem", color: "var(--orange)" }}>
-                Total: ${currentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                Total: ₹{currentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
           </div>
@@ -530,11 +530,11 @@ const CustomerPortal = () => {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     <span>Original Quoted:</span>
-                    <span className="tnum">${grossTotal.toFixed(2)}</span>
+                    <span className="tnum">₹{grossTotal.toFixed(2)}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--color-success)", marginTop: "4px" }}>
                     <span>Proposed Savings:</span>
-                    <span className="tnum">-${proposedSavings.toFixed(2)}</span>
+                    <span className="tnum">-₹{proposedSavings.toFixed(2)}</span>
                   </div>
                   <div
                     style={{
@@ -549,7 +549,7 @@ const CustomerPortal = () => {
                   >
                     <span>Your Proposed Total:</span>
                     <span className="tnum" style={{ color: "var(--orange)" }}>
-                      ${proposedCounterTotal.toFixed(2)}
+                      ₹{proposedCounterTotal.toFixed(2)}
                     </span>
                   </div>
                 </div>

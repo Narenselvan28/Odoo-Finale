@@ -77,7 +77,7 @@ const Dashboard = () => {
         <div className="stat-card">
           <div className="label">Total Pipeline Value</div>
           <div className="value orange tnum">
-            ${totalPipeline.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            ₹{totalPipeline.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
         </div>
 
@@ -238,7 +238,7 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="tnum" style={{ fontWeight: 700 }}>
-                      ${Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="tnum" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
                       {q.created_at ? new Date(q.created_at).toLocaleDateString() : "Recent"}

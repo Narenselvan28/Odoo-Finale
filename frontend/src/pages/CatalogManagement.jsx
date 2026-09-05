@@ -9,7 +9,7 @@ import {
   Plus,
   Search,
   Sliders,
-  DollarSign,
+  IndianRupee,
   Tag,
   Trash2,
   Edit2
@@ -110,7 +110,7 @@ const CatalogManagement = () => {
           onClick={() => setActiveTab("price-lists")}
           className={`btn btn-sm ${activeTab === "price-lists" ? "btn-primary" : "btn-secondary"}`}
         >
-          <DollarSign size={14} /> Price Lists ({priceLists.length})
+          <IndianRupee size={14} /> Price Lists ({priceLists.length})
         </button>
         <button
           onClick={() => setActiveTab("discount-rules")}
@@ -173,8 +173,8 @@ const CatalogManagement = () => {
                           <span className="badge badge-draft tnum">SKU: {p.sku || "N/A"}</span>
                         </td>
                         <td>{p.category_name || "Enterprise Hardware"}</td>
-                        <td className="tnum" style={{ fontWeight: 600 }}>${base.toFixed(2)}</td>
-                        <td className="tnum" style={{ color: "var(--color-text-muted)" }}>${cost.toFixed(2)}</td>
+                        <td className="tnum" style={{ fontWeight: 600 }}>₹{base.toFixed(2)}</td>
+                        <td className="tnum" style={{ color: "var(--color-text-muted)" }}>₹{cost.toFixed(2)}</td>
                         <td>
                           <span className={`badge ${margin >= 35 ? "badge-approved" : "badge-pending"}`}>
                             {margin.toFixed(1)}%
@@ -302,7 +302,7 @@ const CatalogManagement = () => {
                   <tr key={pl.id}>
                     <td className="tnum">#{pl.id}</td>
                     <td style={{ fontWeight: 600 }}>{pl.name}</td>
-                    <td className="tnum">{pl.currency || "USD"}</td>
+                    <td className="tnum">{pl.currency || "INR"}</td>
                     <td><span className="badge badge-approved">Active</span></td>
                   </tr>
                 ))}
@@ -359,7 +359,7 @@ const CatalogManagement = () => {
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
                   <div>
-                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, marginBottom: "4px" }}>Base Price ($)</label>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, marginBottom: "4px" }}>Base Price (₹)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -369,7 +369,7 @@ const CatalogManagement = () => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, marginBottom: "4px" }}>Cost Price ($)</label>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, marginBottom: "4px" }}>Cost Price (₹)</label>
                     <input
                       type="number"
                       step="0.01"

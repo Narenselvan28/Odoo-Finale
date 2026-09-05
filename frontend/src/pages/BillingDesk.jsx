@@ -11,7 +11,7 @@ import {
   Clock,
   AlertTriangle,
   Search,
-  DollarSign
+  IndianRupee
 } from "lucide-react";
 
 const BillingDesk = () => {
@@ -65,10 +65,10 @@ const BillingDesk = () => {
         <div className="metric-card">
           <div className="metric-card-top">
             <span>Gross Invoiced Value</span>
-            <DollarSign size={16} color="var(--color-accent)" />
+            <IndianRupee size={16} color="var(--color-accent)" />
           </div>
           <div className="metric-value tnum">
-            ${totalInvoiced.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            ₹{totalInvoiced.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
           <div className="metric-sub">{invoices.length} invoices generated</div>
         </div>
@@ -179,7 +179,7 @@ const BillingDesk = () => {
                       <span className="badge badge-draft">{inv.invoice_type || "ONE_TIME"}</span>
                     </td>
                     <td className="tnum" style={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                      ${Number(inv.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{Number(inv.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="tnum" style={{ color: "var(--color-text-muted)", fontSize: "0.75rem" }}>
                       {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : "2026-10-01"}
@@ -262,7 +262,7 @@ const BillingDesk = () => {
                     <td className="tnum">#{p.id}</td>
                     <td style={{ fontWeight: 600 }}>{p.name}</td>
                     <td style={{ textTransform: "uppercase" }} className="badge badge-draft">{p.billing_frequency || "MONTHLY"}</td>
-                    <td className="tnum" style={{ fontWeight: 600 }}>${Number(p.price || 0).toFixed(2)}</td>
+                    <td className="tnum" style={{ fontWeight: 600 }}>₹{Number(p.price || 0).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -294,7 +294,7 @@ const BillingDesk = () => {
                     <td className="tnum">#{s.id}</td>
                     <td className="tnum" style={{ color: "var(--color-accent)" }}>Subscription #{s.subscription_id}</td>
                     <td className="tnum">{s.billing_date ? new Date(s.billing_date).toLocaleDateString() : "2026-10-01"}</td>
-                    <td className="tnum" style={{ fontWeight: 600 }}>${Number(s.amount || 0).toFixed(2)}</td>
+                    <td className="tnum" style={{ fontWeight: 600 }}>₹{Number(s.amount || 0).toFixed(2)}</td>
                     <td><span className="badge badge-pending">Scheduled</span></td>
                   </tr>
                 ))}

@@ -140,10 +140,10 @@ const QuotationsList = () => {
         <div className="metric-card">
           <div className="metric-card-top">
             <span>Pipeline Value</span>
-            <span style={{ fontSize: "0.8rem", fontWeight: 700 }}>USD</span>
+            <span style={{ fontSize: "0.8rem", fontWeight: 700 }}>INR</span>
           </div>
           <div className="metric-value tnum">
-            ${quotations.reduce((acc, q) => acc + (Number(q.total_amount) || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            ₹{quotations.reduce((acc, q) => acc + (Number(q.total_amount) || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
           <div className="metric-sub">Aggregated gross quotations</div>
         </div>
@@ -230,7 +230,7 @@ const QuotationsList = () => {
                     </td>
                     <td>{getStatusBadge(q.status)}</td>
                     <td className="tnum" style={{ fontWeight: 600 }}>
-                      ${Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="tnum" style={{ color: "var(--color-text-secondary)", fontSize: "0.75rem" }}>
                       {q.created_at ? new Date(q.created_at).toLocaleDateString() : "2026-09-01"}

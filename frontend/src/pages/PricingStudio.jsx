@@ -50,7 +50,7 @@ const PricingStudio = () => {
     `QTE-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`
   );
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
-  const [currency] = useState("USD");
+  const [currency] = useState("INR");
   const [validUntil, setValidUntil] = useState(
     new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   );
@@ -795,7 +795,7 @@ const PricingStudio = () => {
                       </td>
 
                       <td className="tnum" style={{ fontWeight: 600 }}>
-                        ${item.net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ₹{item.net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
 
                       <td>
@@ -923,7 +923,7 @@ const PricingStudio = () => {
                         >
                           <div>
                             <span style={{ color: "var(--color-text-muted)" }}>List Price: </span>
-                            <strong className="tnum">${addPrice.toFixed(2)}</strong>
+                            <strong className="tnum">₹{addPrice.toFixed(2)}</strong>
                           </div>
                           <div>
                             <span style={{ color: "var(--color-text-muted)" }}>Margin Lift: </span>
@@ -1067,7 +1067,7 @@ const PricingStudio = () => {
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Upfront Capex / One-Time</div>
                   <div className="tnum" style={{ fontSize: "1.125rem", fontWeight: 700 }}>
-                    ${capexTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹{capexTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>
                     {capexItems.length} hardware/setup lines
@@ -1077,7 +1077,7 @@ const PricingStudio = () => {
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Monthly Recurring (MRR)</div>
                   <div className="tnum" style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--color-accent)" }}>
-                    ${monthlyOpex.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹{monthlyOpex.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>
                     {opexItems.length} recurring lines
@@ -1087,7 +1087,7 @@ const PricingStudio = () => {
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Annual Run Rate (ARR)</div>
                   <div className="tnum" style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--color-success)" }}>
-                    ${annualRecurringRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹{annualRecurringRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>12-month projected ARR</div>
                 </div>
@@ -1095,7 +1095,7 @@ const PricingStudio = () => {
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Total Contract Value (TCV)</div>
                   <div className="tnum" style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--orange)" }}>
-                    ${totalContractValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹{totalContractValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>
                     Over {contractTermMonths}-mo term
@@ -1295,31 +1295,31 @@ const PricingStudio = () => {
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Gross List Value</span>
                 <span className="tnum">
-                  ${totalGross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{totalGross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Total Concessions</span>
                 <span className="tnum" style={{ color: "var(--color-danger)" }}>
-                  -${totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  -₹{totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Net Subtotal</span>
                 <span className="tnum" style={{ fontWeight: 600 }}>
-                  ${netSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{netSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Tax Est. (18%)</span>
                 <span className="tnum">
-                  ${estimatedTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{estimatedTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="cpq-summary-row total">
                 <span>Grand Total</span>
                 <span className="tnum" style={{ color: "var(--color-accent)" }}>
-                  ${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
@@ -1409,7 +1409,7 @@ const PricingStudio = () => {
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Freight Cost Factor</div>
                   <div className="tnum" style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-accent)" }}>
-                    ${estimatedFreightCost.toFixed(2)}
+                    ₹{estimatedFreightCost.toFixed(2)}
                   </div>
                 </div>
                 <div>

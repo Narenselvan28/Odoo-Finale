@@ -19,7 +19,7 @@
   font-weight: 400;
   font-display: swap;
   src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUUsj.ttf') format('truetype');
-  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+  unicode-range: U+0030-0039, U+20B9, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
 }
 @font-face {
   font-family: 'Space Grotesk Numbers';
@@ -27,7 +27,7 @@
   font-weight: 500;
   font-display: swap;
   src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf') format('truetype');
-  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+  unicode-range: U+0030-0039, U+20B9, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
 }
 @font-face {
   font-family: 'Space Grotesk Numbers';
@@ -35,7 +35,7 @@
   font-weight: 600;
   font-display: swap;
   src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj42Vksj.ttf') format('truetype');
-  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+  unicode-range: U+0030-0039, U+20B9, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
 }
 @font-face {
   font-family: 'Space Grotesk Numbers';
@@ -43,7 +43,7 @@
   font-weight: 700;
   font-display: swap;
   src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf') format('truetype');
-  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+  unicode-range: U+0030-0039, U+20B9, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
 }
 
 /* ===== LIGHT MODE (Default) ===== */
