@@ -17,6 +17,7 @@ import {
   MessageSquare,
   ShieldAlert,
   ArrowUpRight,
+  IndianRupee,
   TrendingUp,
 } from "lucide-react";
 

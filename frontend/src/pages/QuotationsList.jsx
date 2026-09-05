@@ -140,7 +140,7 @@ const QuotationsList = () => {
         <div className="metric-card">
           <div className="metric-card-top">
             <span>Pipeline Value</span>
-            <span style={{ fontSize: "0.8rem", fontWeight: 700 }}>INR</span>
+            <span style={{ fontSize: "0.8rem", fontWeight: 700 }}>INR (₹)</span>
           </div>
           <div className="metric-value tnum">
             ₹{quotations.reduce((acc, q) => acc + (Number(q.total_amount) || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}

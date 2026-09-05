@@ -10,6 +10,7 @@ import {
   Filter,
   TrendingUp,
   Percent,
+  IndianRupee,
   ShieldCheck,
   Truck,
   RefreshCw,

@@ -302,7 +302,7 @@ const CatalogManagement = () => {
                   <tr key={pl.id}>
                     <td className="tnum">#{pl.id}</td>
                     <td style={{ fontWeight: 600 }}>{pl.name}</td>
-                    <td className="tnum">{pl.currency || "INR"}</td>
+                    <td className="tnum">{pl.currency || "INR (₹)"}</td>
                     <td><span className="badge badge-approved">Active</span></td>
                   </tr>
                 ))}
