@@ -154,18 +154,6 @@ const Dashboard = () => {
     };
   }, [quotations]);
 
-  // Central Hub Module Navigation Links (from wireframe top tabs)
-  const hubModules = [
-    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, active: true },
-    { label: "Quotations", path: "/quotations", icon: FileSpreadsheet },
-    { label: "Approvals", path: "/approvals", icon: CheckSquare, badge: pendingApprovalsCount },
-    { label: "Fulfillment", path: "/inventory", icon: Warehouse },
-    { label: "Subscriptions", path: "/billing", icon: Receipt },
-    { label: "Invoices", path: "/billing", icon: Receipt },
-    { label: "Deal Health", path: "/intelligence", icon: Activity, badge: atRiskCount },
-    { label: "Reports", path: "/reporting", icon: BarChart3 },
-    { label: "Product Catalog", path: "/catalog", icon: Boxes },
-  ];
 
   // Recent Activity Feed items (incorporating exact wireframe items + live data)
   const activityFeed = useMemo(() => {
@@ -227,38 +215,6 @@ const Dashboard = () => {
       pageTitle="Sales Dashboard / Home"
       subtitle="Central hub, links out to every module below"
     >
-      {/* ===== CENTRAL HUB MODULE NAVIGATION BAR (from wireframe) ===== */}
-      <div className="hub-nav-wrapper">
-        <div className="hub-nav-bar">
-          {hubModules.map((m) => {
-            const Icon = m.icon;
-            return (
-              <Link
-                key={m.label}
-                to={m.path}
-                className={`hub-nav-pill ${m.active ? "active" : ""}`}
-              >
-                <Icon size={14} />
-                <span>{m.label}</span>
-                {m.badge !== undefined && m.badge > 0 && (
-                  <span
-                    style={{
-                      background: m.active ? "rgba(255, 255, 255, 0.25)" : "var(--orange-pale)",
-                      color: m.active ? "#FFFFFF" : "var(--orange)",
-                      fontSize: "10px",
-                      padding: "1px 5px",
-                      borderRadius: "var(--radius-sm)",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {m.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
 
       {/* ===== 3 HERO KPI CARDS (from wireframe skeleton) ===== */}
       <div className="hero-kpi-grid">
