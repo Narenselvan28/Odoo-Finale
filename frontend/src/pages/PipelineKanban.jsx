@@ -404,12 +404,12 @@ const PipelineKanban = () => {
                               <ExternalLink size={12} /> Portal
                             </Link>
                             <Link
-                              to="/cpq"
+                              to={`/cpq/${deal.id}`}
                               className="btn btn-ghost btn-sm"
                               style={{ padding: "2px 6px", fontSize: "0.6875rem" }}
-                              title="Open in CPQ Studio"
+                              title="Open Quotation Detail Builder"
                             >
-                              Studio
+                              Detail / CPQ
                             </Link>
                           </div>
 

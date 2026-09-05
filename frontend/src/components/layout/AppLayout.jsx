@@ -17,6 +17,7 @@ import {
   Kanban,
   BarChart3,
   User,
+  RefreshCw,
 } from "lucide-react";
 
 const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
@@ -127,6 +128,16 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
             <span style={{ color: "var(--text)" }}>{user?.name || "User"}</span>
             <span className="badge badge-orange">{roleMeta.label}</span>
           </div>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="btn btn-ghost btn-sm"
+            style={{ display: "inline-flex", gap: "5px", alignItems: "center", fontSize: "11.5px" }}
+            title="Reload Data: Refreshes pricing, stock, and approval data from backend (Spec B1)"
+          >
+            <RefreshCw size={12} />
+            <span>Reload Data</span>
+          </button>
 
           <Link to="/cpq" className="btn btn-primary btn-sm">
             <Plus size={13} /> New Quote

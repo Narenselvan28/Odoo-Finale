@@ -426,13 +426,14 @@ const Dashboard = () => {
                       <tr key={q.id}>
                         <td>
                           <Link
-                            to="/quotations"
+                            to={`/cpq/${q.id}`}
                             className="tnum"
                             style={{
                               fontWeight: 700,
                               color: "var(--orange)",
                               textDecoration: "none",
                             }}
+                            title="Open Quotation Detail Builder"
                           >
                             {q.quotation_number || `QT-2026-${String(q.id).padStart(3, "0")}`}
                           </Link>
@@ -467,19 +468,34 @@ const Dashboard = () => {
                           {q.created_at ? new Date(q.created_at).toLocaleDateString() : "Recent"}
                         </td>
                         <td>
-                          <Link
-                            to={`/portal/${q.id}`}
-                            target="_blank"
-                            className="btn btn-ghost btn-xs"
-                            style={{
-                              color: "var(--orange)",
-                              display: "inline-flex",
-                              gap: "4px",
-                              alignItems: "center",
-                            }}
-                          >
-                            <ExternalLink size={12} /> View
-                          </Link>
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            <Link
+                              to={`/cpq/${q.id}`}
+                              className="btn btn-ghost btn-xs"
+                              style={{
+                                display: "inline-flex",
+                                gap: "3px",
+                                alignItems: "center",
+                              }}
+                              title="Open Quotation Detail Builder"
+                            >
+                              Detail
+                            </Link>
+                            <Link
+                              to={`/portal/${q.id}`}
+                              target="_blank"
+                              className="btn btn-ghost btn-xs"
+                              style={{
+                                color: "var(--orange)",
+                                display: "inline-flex",
+                                gap: "3px",
+                                alignItems: "center",
+                              }}
+                              title="Customer Live Negotiation Portal"
+                            >
+                              <ExternalLink size={12} /> Portal
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     ))

@@ -219,9 +219,15 @@ const QuotationsList = () => {
                 filtered.slice(0, 50).map((q) => (
                   <tr key={q.id}>
                     <td>
-                      <span className="tnum" style={{ fontWeight: 600, color: "var(--color-accent)" }}>
-                        {q.quotation_number || `QT-2026-${String(q.id).padStart(3, "0")}`}
-                      </span>
+                      <Link
+                        to={`/cpq/${q.id}`}
+                        style={{ textDecoration: "none" }}
+                        title="Click to open Quotation Detail Builder"
+                      >
+                        <span className="tnum" style={{ fontWeight: 700, color: "var(--color-accent)", cursor: "pointer" }}>
+                          {q.quotation_number || `QT-2026-${String(q.id).padStart(3, "0")}`}
+                        </span>
+                      </Link>
                     </td>
                     <td>
                       <div style={{ fontWeight: 500 }}>{q.customer_name || `Customer #${q.customer_id}`}</div>
@@ -263,7 +269,12 @@ const QuotationsList = () => {
                         >
                           <MessageSquare size={14} />
                         </Link>
-                        <Link to="/cpq" className="btn btn-ghost btn-sm" title="Open in Studio" style={{ padding: "4px" }}>
+                        <Link
+                          to={`/cpq/${q.id}`}
+                          className="btn btn-ghost btn-sm"
+                          title="Open Quotation Detail Builder"
+                          style={{ padding: "4px" }}
+                        >
                           <ExternalLink size={14} />
                         </Link>
                         <button

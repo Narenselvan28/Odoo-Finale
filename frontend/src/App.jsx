@@ -49,6 +49,14 @@ function App() {
               }
             />
             <Route
+              path="/cpq/:id"
+              element={
+                <PrivateRoute>
+                  <PricingStudio />
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="/quotations"
               element={
                 <PrivateRoute>

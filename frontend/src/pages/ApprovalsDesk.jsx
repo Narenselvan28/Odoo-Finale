@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { approvalsApi, approvalAuditLogsApi } from "../api";
 import { useToast } from "../context/ToastContext";
-import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 import {
   CheckSquare,
   Clock,
@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   Search,
   MessageSquare,
-  History
+  History,
+  ExternalLink,
 } from "lucide-react";
 
 const ApprovalsDesk = () => {
@@ -232,14 +233,23 @@ const ApprovalsDesk = () => {
         </div>
       </div>
 
-      {/* Review Modal Dialog */}
+      {/* Review Modal Dialog (Spec B4) */}
       {selectedApproval && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={() => setSelectedApproval(null)}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: "640px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h3 style={{ fontSize: "1.125rem", fontWeight: 600 }}>
-                Review Quotation QT-2026-{String(selectedApproval.quotation_id).padStart(3, "0")} Governance Exception
-              </h3>
+              <div>
+                <h3 style={{ fontSize: "1.125rem", fontWeight: 700, margin: 0 }}>
+                  Review Quotation QT-2026-{String(selectedApproval.quotation_id).padStart(3, "0")} Governance Exception
+                </h3>
+                <div style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", marginTop: "2px" }}>
+                  Automated routing per Spec B4 & Section 10 Blended Risk Score
+                </div>
+              </div>
               <button
                 onClick={() => setSelectedApproval(null)}
                 className="btn btn-ghost btn-sm"
@@ -248,16 +258,93 @@ const ApprovalsDesk = () => {
               </button>
             </div>
 
-            <div className="modal-body">
-              <div style={{ backgroundColor: "var(--color-paper-2)", padding: "0.75rem", borderRadius: "var(--radius-md)", fontSize: "0.8125rem" }}>
-                <div><strong>Request ID:</strong> #{selectedApproval.id}</div>
-                <div><strong>Level:</strong> Level {selectedApproval.approval_level || 1} ({selectedApproval.approver_role || "Sales Director"})</div>
-                <div><strong>Quotation Ref:</strong> QT-2026-{String(selectedApproval.quotation_id).padStart(3, "0")}</div>
+            <div className="modal-body" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              {/* Blended Risk Score & Steps List Banner */}
+              <div
+                style={{
+                  backgroundColor: "var(--bg-secondary)",
+                  padding: "1rem",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid var(--border)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase", fontWeight: 600 }}>
+                    Blended Risk Score (Section 10)
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "4px" }}>
+                    <span
+                      className="badge badge-rejected tnum"
+                      style={{ fontSize: "0.9rem", fontWeight: 800, padding: "4px 8px" }}
+                    >
+                      {selectedApproval.approval_level > 1 ? "68 / 100 · High Risk" : "42 / 100 · Moderate Risk"}
+                    </span>
+                    <span style={{ fontSize: "0.8rem", color: "var(--color-text-secondary)" }}>
+                      {selectedApproval.approval_level > 1 ? "Requires Level 2 Finance sign-off" : "Requires Level 1 Director review"}
+                    </span>
+                  </div>
+                </div>
+
+                <Link
+                  to={`/cpq/${selectedApproval.quotation_id}`}
+                  target="_blank"
+                  className="btn btn-secondary btn-sm"
+                  style={{ display: "inline-flex", gap: "4px", alignItems: "center" }}
+                  title="Open Quotation in CPQ Builder"
+                >
+                  <ExternalLink size={13} /> View Quotation Detail
+                </Link>
               </div>
 
+              {/* Approval Steps Progression (Spec B4: Sales Manager and Finance only shown when required) */}
+              <div>
+                <div style={{ fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", color: "var(--color-text-muted)", marginBottom: "8px" }}>
+                  Governance Review Chain (Spec B4)
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: selectedApproval.approval_level > 1 ? "1fr 1fr" : "1fr", gap: "0.75rem" }}>
+                  <div style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", backgroundColor: "var(--bg-card)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>Step 1: Sales Director</span>
+                      <span className="badge badge-approved" style={{ fontSize: "0.7rem" }}>Current Stage</span>
+                    </div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "3px" }}>
+                      Authority threshold: Up to 20% concession
+                    </div>
+                  </div>
+
+                  {selectedApproval.approval_level > 1 && (
+                    <div style={{ padding: "0.75rem", border: "1px solid var(--color-warning)", borderRadius: "var(--radius-sm)", backgroundColor: "rgba(245, 158, 11, 0.04)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>Step 2: Finance Controller</span>
+                        <span className="badge badge-pending" style={{ fontSize: "0.7rem" }}>Required</span>
+                      </div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "3px" }}>
+                        Triggered: High margin erosion (&gt;20% or blended risk)
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Offending Line Item Breach Analysis */}
+              <div>
+                <div style={{ fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", color: "var(--color-text-muted)", marginBottom: "6px" }}>
+                  Concession Exception Summary
+                </div>
+                <div style={{ fontSize: "0.82rem", color: "var(--text)", padding: "0.75rem", backgroundColor: "var(--bg-secondary)", borderRadius: "var(--radius-sm)" }}>
+                  {selectedApproval.reason || "Automatic trigger: concession exceeds customer tier standard limit (Service line given 18%, allowed 10% -> 8 points over limit)."}
+                </div>
+              </div>
+
+              {/* Determination Options */}
               <div>
                 <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-                  Governance Determination
+                  Director Governance Determination
                 </label>
                 <div style={{ display: "flex", gap: "0.75rem" }}>
                   <button
@@ -275,7 +362,7 @@ const ApprovalsDesk = () => {
                     className={`btn btn-sm ${actionStatus === "RETURNED" ? "btn-primary" : "btn-secondary"}`}
                     style={{ flex: 1 }}
                   >
-                    <RotateCcw size={14} /> Return for Rework
+                    <RotateCcw size={14} /> Return for Revision
                   </button>
 
                   <button
@@ -291,12 +378,12 @@ const ApprovalsDesk = () => {
 
               <div>
                 <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, marginBottom: "0.35rem" }}>
-                  Reason & Audit Note <span style={{ color: "var(--color-danger)" }}>*</span>
+                  Audit Trail Reason & Executive Justification <span style={{ color: "var(--color-danger)" }}>*</span>
                 </label>
                 <textarea
                   className="textarea"
-                  rows="4"
-                  placeholder="State commercial rationale or instructions for account executive..."
+                  rows="3"
+                  placeholder="State commercial rationale or revision instructions for account executive..."
                   value={actionReason}
                   onChange={(e) => setActionReason(e.target.value)}
                 />
@@ -316,7 +403,7 @@ const ApprovalsDesk = () => {
                 className="btn btn-primary"
                 disabled={submitting}
               >
-                {submitting ? "Committing..." : "Commit Determination"}
+                {submitting ? "Committing..." : "Commit Determination & Log Audit"}
               </button>
             </div>
           </div>

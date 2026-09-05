@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import {
   productsApi,
@@ -10,6 +11,7 @@ import {
   productRecommendationsApi,
 } from "../api";
 import { useToast } from "../context/ToastContext";
+import { formatINR, formatCompactINR, formatCurrencyINR } from "../utils/formatters";
 import {
   Plus,
   Trash2,
@@ -18,6 +20,7 @@ import {
   Send,
   Save,
   CheckCircle,
+  CheckCircle2,
   FileText,
   Percent,
   TrendingUp,
@@ -33,10 +36,18 @@ import {
   ArrowUpRight,
   Info,
   ShieldAlert,
+  ExternalLink,
 } from "lucide-react";
 
 const PricingStudio = () => {
   const { showToast } = useToast();
+  const { id: routeQuoteId } = useParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const targetQuoteId = routeQuoteId || searchParams.get("id");
+  const [loadedQuoteId, setLoadedQuoteId] = useState(targetQuoteId || null);
+  const [loadedQuoteStatus, setLoadedQuoteStatus] = useState("DRAFT");
+
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
@@ -112,44 +123,91 @@ const PricingStudio = () => {
         setInventoryList(invList);
         setDbRecommendations(recList);
 
-        // Set next sequential quotation number in QT-YYYY-XXX format
-        const nextNum = quotes.length + 1;
-        setQuoteNumber(`QT-${new Date().getFullYear()}-${String(nextNum).padStart(3, "0")}`);
-
-        if (custList.length > 0) {
-          setSelectedCustomerId(custList[0].id);
+        let existingLoaded = false;
+        if (targetQuoteId) {
+          try {
+            const qRes = await quotationsApi.getById(targetQuoteId);
+            const qData = qRes.data?.quotation || qRes.data;
+            if (qData) {
+              setLoadedQuoteId(qData.id);
+              setLoadedQuoteStatus(qData.status || "DRAFT");
+              setQuoteNumber(qData.quotation_number || `QT-2026-${String(qData.id).padStart(3, "0")}`);
+              if (qData.customer_id) {
+                setSelectedCustomerId(qData.customer_id);
+              }
+              if (qData.valid_until) {
+                setValidUntil(new Date(qData.valid_until).toISOString().split("T")[0]);
+              }
+              if (qData.QuotationItems && qData.QuotationItems.length > 0) {
+                const items = qData.QuotationItems.map((item) => {
+                  const prod = item.Product || prodList.find((p) => p.id === item.product_id) || {};
+                  const cat = prod.Category || {};
+                  return {
+                    id: item.id || Date.now() + Math.random(),
+                    product_id: item.product_id,
+                    name: prod.name || `Product #${item.product_id}`,
+                    sku: prod.sku || `SKU-${item.product_id}`,
+                    base_price: Number(item.unit_price) || Number(prod.base_price) || 1200,
+                    cost_price: Number(item.cost_price) || Number(prod.cost_price) || 600,
+                    quantity: Number(item.quantity) || 1,
+                    discount_percent: Number(item.discount_percent) || 0,
+                    product_type: prod.product_type || "ONE_TIME",
+                    category_name: cat.name || "General",
+                    category_max_discount: cat.max_discount || 15,
+                    tax_percent: Number(prod.tax_percent) || 18,
+                  };
+                });
+                setLineItems(items);
+                existingLoaded = true;
+              }
+            }
+          } catch (loadErr) {
+            console.warn("Could not load quotation by ID:", loadErr);
+          }
         }
 
-        // Initialize with default items
-        if (prodList.length > 0) {
-          const p1 = prodList[0];
-          const p2 = prodList[1] || prodList[0];
-          setLineItems([
-            {
-              id: Date.now(),
-              product_id: p1.id,
-              name: p1.name,
-              sku: p1.sku || "SKU-001",
-              base_price: Number(p1.base_price) || 1200,
-              cost_price: Number(p1.cost_price) || 600,
-              quantity: 2,
-              discount_percent: 5,
-              product_type: p1.product_type || "SUBSCRIPTION",
-              category_name: p1.Category?.name || "ERP & CRM",
-            },
-            {
-              id: Date.now() + 1,
-              product_id: p2.id,
-              name: p2.name,
-              sku: p2.sku || "SKU-002",
-              base_price: Number(p2.base_price) || 850,
-              cost_price: Number(p2.cost_price) || 400,
-              quantity: 1,
-              discount_percent: 0,
-              product_type: p2.product_type || "ONE_TIME",
-              category_name: p2.Category?.name || "Cloud Infrastructure",
-            },
-          ]);
+        if (!existingLoaded) {
+          // Set next sequential quotation number in QT-YYYY-XXX format
+          const nextNum = quotes.length + 1;
+          setQuoteNumber(`QT-${new Date().getFullYear()}-${String(nextNum).padStart(3, "0")}`);
+
+          if (custList.length > 0) {
+            setSelectedCustomerId(custList[0].id);
+          }
+
+          // Initialize with default items
+          if (prodList.length > 0) {
+            const p1 = prodList[0];
+            const p2 = prodList[1] || prodList[0];
+            setLineItems([
+              {
+                id: Date.now(),
+                product_id: p1.id,
+                name: p1.name,
+                sku: p1.sku || "SKU-001",
+                base_price: Number(p1.base_price) || 1200,
+                cost_price: Number(p1.cost_price) || 600,
+                quantity: 2,
+                discount_percent: 5,
+                product_type: p1.product_type || "SUBSCRIPTION",
+                category_name: p1.Category?.name || "ERP & CRM",
+                category_max_discount: p1.Category?.max_discount || 20,
+              },
+              {
+                id: Date.now() + 1,
+                product_id: p2.id,
+                name: p2.name,
+                sku: p2.sku || "SKU-002",
+                base_price: Number(p2.base_price) || 850,
+                cost_price: Number(p2.cost_price) || 400,
+                quantity: 1,
+                discount_percent: 0,
+                product_type: p2.product_type || "ONE_TIME",
+                category_name: p2.Category?.name || "Cloud Infrastructure",
+                category_max_discount: p2.Category?.max_discount || 15,
+              },
+            ]);
+          }
         }
       } catch (err) {
         showToast({
@@ -511,9 +569,14 @@ const PricingStudio = () => {
         })),
       };
 
-      const res = await quotationsApi.create(payload);
-      const createdQuote = res.data?.quotation || res.data;
-      const quoteId = createdQuote.id;
+      let res;
+      if (loadedQuoteId) {
+        res = await quotationsApi.update(loadedQuoteId, payload);
+      } else {
+        res = await quotationsApi.create(payload);
+      }
+      const savedQuote = res.data?.quotation || res.data;
+      const quoteId = savedQuote?.id || loadedQuoteId;
 
       if (status === "PENDING_APPROVAL" && quoteId) {
         showToast({
@@ -523,8 +586,8 @@ const PricingStudio = () => {
         });
       } else {
         showToast({
-          title: "Quotation Created",
-          message: `Quotation #${quoteNumber} recorded successfully with status ${status}.`,
+          title: loadedQuoteId ? "Quotation Updated" : "Quotation Created",
+          message: `Quotation #${quoteNumber} saved successfully with status ${status}.`,
           type: "success",
         });
       }
@@ -540,7 +603,18 @@ const PricingStudio = () => {
   };
 
   return (
-    <AppLayout pageTitle="Pricing Studio · CPQ Data Entry Workbench">
+    <AppLayout
+      pageTitle={
+        loadedQuoteId
+          ? `Quotation Detail: ${quoteNumber} (${selectedCustomer?.name || "Customer Account"})`
+          : "Quotation Builder / CPQ Studio"
+      }
+      subtitle={
+        loadedQuoteId
+          ? "Opened by clicking a row on the Quotations list. Add products, apply discounts, review upsells."
+          : "Configure multi-category enterprise quotations with live discount governance and upsell intelligence"
+      }
+    >
       {/* Top Banner with Quote Identification & Governance State */}
       <div
         className="card"
@@ -694,128 +768,175 @@ const PricingStudio = () => {
                 </button>
               </div>
             </div>
+            {/* Skeleton Screen 4 Callout Notice */}
+            <div
+              style={{
+                margin: "1rem 1.25rem 0.5rem 1.25rem",
+                padding: "10px 14px",
+                backgroundColor: "rgba(245, 158, 11, 0.08)",
+                border: "1px solid var(--color-warning)",
+                borderRadius: "var(--radius-md)",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <AlertTriangle size={16} color="var(--color-warning)" style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: "0.835rem", fontWeight: 600, color: "var(--text-heading)" }}>
+                Discount is checked against each line's own limit live, as soon as it is entered, not only at submit time.
+              </span>
+            </div>
 
             <div className="data-table-wrapper">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: "28%" }}>Product & SKU</th>
-                    <th style={{ width: "12%" }}>Type</th>
-                    <th style={{ width: "12%" }}>Base Price</th>
-                    <th style={{ width: "9%" }}>Qty</th>
-                    <th style={{ width: "13%" }}>Discount %</th>
-                    <th style={{ width: "11%" }}>Margin</th>
+                    <th style={{ width: "26%" }}>Product & Description</th>
+                    <th style={{ width: "8%" }}>Qty</th>
+                    <th style={{ width: "12%" }}>Unit Price</th>
+                    <th style={{ width: "11%" }}>Discount</th>
+                    <th style={{ width: "10%" }}>Limit</th>
+                    <th style={{ width: "13%" }}>Status</th>
+                    <th style={{ width: "8%" }}>Margin</th>
                     <th style={{ width: "12%" }}>Net Total</th>
                     <th style={{ width: "3%" }}></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {calculatedItems.map((item, idx) => (
-                    <tr key={item.id}>
-                      <td>
-                        <select
-                          className="select select-sm"
-                          value={item.product_id}
-                          onChange={(e) => handleItemChange(idx, "product_id", e.target.value)}
-                        >
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name}
-                            </option>
-                          ))}
-                        </select>
-                        <div
-                          style={{
-                            fontSize: "0.7rem",
-                            color: "var(--color-text-muted)",
-                            marginTop: "2px",
-                            display: "flex",
-                            gap: "0.5rem",
-                          }}
-                          className="tnum"
-                        >
-                          <span>SKU: {item.sku}</span>
-                          <span>·</span>
-                          <span>{item.category_name}</span>
-                        </div>
-                      </td>
+                  {calculatedItems.map((item, idx) => {
+                    const customerTierLimit = selectedCustomer?.CustomerTier ? Number(selectedCustomer.CustomerTier.max_discount) : 15;
+                    const catLimit = Number(item.category_max_discount) || 15;
+                    // Dual-governance ceiling as defined in Section 10 & 12
+                    const lineLimit = Math.min(customerTierLimit, catLimit);
+                    const isOver = item.discount_percent > lineLimit;
+                    const overPts = (item.discount_percent - lineLimit).toFixed(1);
 
-                      <td>
-                        <span
-                          className={`badge ${
-                            item.product_type === "SUBSCRIPTION" ? "badge-pending" : "badge-draft"
-                          }`}
-                          style={{ fontSize: "0.6875rem" }}
-                        >
-                          {item.product_type === "SUBSCRIPTION" ? "Recurring" : "One-Time"}
-                        </span>
-                      </td>
+                    return (
+                      <tr key={item.id} style={{ backgroundColor: isOver ? "rgba(239, 68, 68, 0.03)" : undefined }}>
+                        <td>
+                          <select
+                            className="select select-sm"
+                            value={item.product_id}
+                            onChange={(e) => handleItemChange(idx, "product_id", e.target.value)}
+                          >
+                            {products.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name}
+                              </option>
+                            ))}
+                          </select>
+                          <div
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "var(--color-text-muted)",
+                              marginTop: "2px",
+                              display: "flex",
+                              gap: "0.5rem",
+                            }}
+                            className="tnum"
+                          >
+                            <span>SKU: {item.sku}</span>
+                            <span>·</span>
+                            <span>{item.category_name}</span>
+                            <span>·</span>
+                            <span style={{ color: item.product_type === "SUBSCRIPTION" ? "var(--color-info)" : "inherit" }}>
+                              {item.product_type === "SUBSCRIPTION" ? "Recurring" : "One-Time"}
+                            </span>
+                          </div>
+                        </td>
 
-                      <td>
-                        <input
-                          type="number"
-                          className="input input-sm tnum"
-                          value={item.base_price}
-                          onChange={(e) => handleItemChange(idx, "base_price", Number(e.target.value))}
-                        />
-                      </td>
-
-                      <td>
-                        <input
-                          type="number"
-                          min="1"
-                          className="input input-sm tnum"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(idx, "quantity", Number(e.target.value))}
-                        />
-                      </td>
-
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <td>
                           <input
                             type="number"
-                            min="0"
-                            max="100"
+                            min="1"
                             className="input input-sm tnum"
-                            value={item.discount_percent}
-                            onChange={(e) =>
-                              handleItemChange(idx, "discount_percent", Number(e.target.value))
-                            }
+                            value={item.quantity}
+                            onChange={(e) => handleItemChange(idx, "quantity", Number(e.target.value))}
                           />
-                          <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>%</span>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td>
-                        <span
-                          className={`badge ${
-                            item.marginPercent >= 35
-                              ? "badge-approved"
-                              : item.marginPercent >= 25
-                              ? "badge-pending"
-                              : "badge-rejected"
-                          }`}
-                        >
-                          {item.marginPercent.toFixed(1)}%
-                        </span>
-                      </td>
+                        <td>
+                          <input
+                            type="number"
+                            className="input input-sm tnum"
+                            value={item.base_price}
+                            onChange={(e) => handleItemChange(idx, "base_price", Number(e.target.value))}
+                          />
+                        </td>
 
-                      <td className="tnum" style={{ fontWeight: 600 }}>
-                        ₹{item.net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              className="input input-sm tnum"
+                              style={{ borderColor: isOver ? "var(--color-danger)" : undefined }}
+                              value={item.discount_percent}
+                              onChange={(e) =>
+                                handleItemChange(idx, "discount_percent", Number(e.target.value))
+                              }
+                            />
+                            <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>%</span>
+                          </div>
+                        </td>
 
-                      <td>
-                        <button
-                          onClick={() => handleRemoveItem(idx)}
-                          className="btn btn-ghost btn-sm"
-                          style={{ color: "var(--color-text-muted)", padding: "4px" }}
-                          title="Remove line item"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        <td>
+                          <span className="badge badge-draft tnum" style={{ fontWeight: 600 }}>
+                            {lineLimit}%
+                          </span>
+                        </td>
+
+                        <td>
+                          {isOver ? (
+                            <span
+                              className="badge badge-rejected"
+                              style={{ display: "inline-flex", gap: "3px", alignItems: "center", fontSize: "0.72rem", fontWeight: 700 }}
+                              title={`Discount exceeds strict ceiling (${lineLimit}%) by ${overPts} points`}
+                            >
+                              <AlertTriangle size={11} /> OVER (+{overPts}pt)
+                            </span>
+                          ) : (
+                            <span
+                              className="badge badge-approved"
+                              style={{ display: "inline-flex", gap: "3px", alignItems: "center", fontSize: "0.72rem" }}
+                            >
+                              <CheckCircle2 size={11} /> OK
+                            </span>
+                          )}
+                        </td>
+
+                        <td>
+                          <span
+                            className={`badge ${
+                              item.marginPercent >= 35
+                                ? "badge-approved"
+                                : item.marginPercent >= 25
+                                ? "badge-pending"
+                                : "badge-rejected"
+                            }`}
+                          >
+                            {item.marginPercent.toFixed(1)}%
+                          </span>
+                        </td>
+
+                        <td className="tnum" style={{ fontWeight: 600 }}>
+                          {formatCurrencyINR(item.net, 2)}
+                        </td>
+
+                        <td>
+                          <button
+                            onClick={() => handleRemoveItem(idx)}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: "var(--color-text-muted)", padding: "4px" }}
+                            title="Remove line item"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -1301,31 +1422,31 @@ const PricingStudio = () => {
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Gross List Value</span>
                 <span className="tnum">
-                  ₹{totalGross.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatCurrencyINR(totalGross, 2)}
                 </span>
               </div>
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Total Concessions</span>
                 <span className="tnum" style={{ color: "var(--color-danger)" }}>
-                  -₹{totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  -{formatCurrencyINR(totalDiscount, 2)}
                 </span>
               </div>
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Net Subtotal</span>
                 <span className="tnum" style={{ fontWeight: 600 }}>
-                  ₹{netSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatCurrencyINR(netSubtotal, 2)}
                 </span>
               </div>
               <div className="cpq-summary-row">
                 <span style={{ color: "var(--color-text-secondary)" }}>Tax Est. (18%)</span>
                 <span className="tnum">
-                  ₹{estimatedTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatCurrencyINR(estimatedTax, 2)}
                 </span>
               </div>
               <div className="cpq-summary-row total">
                 <span>Grand Total</span>
                 <span className="tnum" style={{ color: "var(--color-accent)" }}>
-                  ₹{grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatCurrencyINR(grandTotal, 2)}
                 </span>
               </div>
             </div>
@@ -1341,7 +1462,7 @@ const PricingStudio = () => {
                   style={{ width: "100%", justifyContent: "center" }}
                 >
                   <Send size={15} />
-                  <span>Submit for {riskAnalysis.approvalRole}</span>
+                  <span>Submit for {riskAnalysis.approvalRole} Approval</span>
                 </button>
               ) : (
                 <button
@@ -1366,6 +1487,18 @@ const PricingStudio = () => {
                 <Save size={15} />
                 <span>Save Draft Quotation</span>
               </button>
+
+              {loadedQuoteId && (
+                <Link
+                  to={`/portal/${loadedQuoteId}`}
+                  target="_blank"
+                  className="btn btn-secondary"
+                  style={{ width: "100%", justifyContent: "center", color: "var(--orange)" }}
+                >
+                  <ArrowUpRight size={15} />
+                  <span>Open Customer Negotiation Portal</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
