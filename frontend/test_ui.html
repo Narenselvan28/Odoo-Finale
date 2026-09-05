@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DealFlow360 – ML API Tester</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      margin: 2rem;
+      color: #f8fafc;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #6366f1;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #ffffff;
+    }
+    .meta-bar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+    }
+    .card h3 {
+      margin-top: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #818cf8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.6rem;
+    }
+    .card pre {
+      background: #090d16;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      max-height: 240px;
+      border: 1px solid #1e293b;
+      flex: 1;
+      margin: 0.5rem 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #38bdf8;
+      font-family: 'Consolas', 'Courier New', monospace;
+    }
+    .card button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 0.55rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      align-self: flex-start;
+      margin-top: 0.25rem;
+    }
+    .card button:hover {
+      background: #6366f1;
+      transform: translateY(-1px);
+    }
+    .card button:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin: 0.5rem 0;
+      flex-direction: column;
+    }
+    .input-group label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-group textarea {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: 'Consolas', monospace;
+      min-height: 80px;
+      resize: vertical;
+    }
+    .input-group textarea:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    .status-badge {
+      display: inline-block;
+      background: #334155;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+    .status-badge.success {
+      background: #064e3b;
+      color: #6ee7b7;
+      border: 1px solid #059669;
+    }
+    .status-badge.error {
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #dc2626;
+    }
+    .badge-info {
+      background: #1e3a8a;
+      color: #93c5fd;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-right: 0.5rem;
+      font-family: monospace;
+    }
+    .base-url {
+      background: #1e293b;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-family: monospace;
+      color: #38bdf8;
+      border: 1px solid #334155;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>🧪 DealFlow360 – Pure Flask ML API Tester</h1>
+        <p style="margin: 0.3rem 0 0 0; color: #94a3b8;">Unified Intelligence & ML Inference Console • 100% Python Flask Backend</p>
+      </div>
+      <div class="meta-bar">
+        <span>Base URL: <code class="base-url" id="base-url">http://localhost:4000</code></span>
+        <button onclick="runAllTests()" style="background:#059669; color:white; border:none; padding:0.4rem 0.8rem; border-radius:6px; font-weight:600; cursor:pointer;">▶ Run All Checks</button>
+      </div>
+    </header>
+
+    <div class="grid" id="cards-container">
+      <!-- Cards will be injected by JavaScript -->
+    </div>
+  </div>
+
+  <script>
+    const BASE = window.location.origin || 'http://localhost:4000';
+    document.getElementById('base-url').textContent = BASE;
+
+    // Helper to fetch JSON and display result
+    async function callApi(endpoint, method = 'GET', body = null) {
+      const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+      };
+      if (body) opts.body = JSON.stringify(body);
+      try {
+        const res = await fetch(BASE + endpoint, opts);
+        const json = await res.json();
+        return { status: res.status, data: json };
+      } catch (e) {
+        return { status: 0, data: { error: e.message } };
+      }
+    }
+
+    // Create a card with a button and result display
+    function createCard(title, endpoint, method = 'GET', bodyBuilder = false, prefill = null) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const header = document.createElement('h3');
+      const badgeId = `badge-${endpoint.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      header.innerHTML = `<span><span class="badge-info">${method}</span>${title}</span> <span class="status-badge" id="${badgeId}">untested</span>`;
+      card.appendChild(header);
+
+      // Optional input area for JSON body
+      if (bodyBuilder) {
+        const group = document.createElement('div');
+        group.className = 'input-group';
+        const label = document.createElement('label');
+        label.textContent = 'Request Payload JSON:';
+        group.appendChild(label);
+        const textarea = document.createElement('textarea');
+        textarea.placeholder = 'Enter JSON payload...';
+        if (prefill) textarea.value = JSON.stringify(prefill, null, 2);
+        group.appendChild(textarea);
+        card.appendChild(group);
+        card._textarea = textarea;
+      }
+
+      const pre = document.createElement('pre');
+      pre.textContent = 'Click button to test endpoint...';
+      card.appendChild(pre);
+
+      const btn = document.createElement('button');
+      btn.textContent = `▶ Execute ${method}`;
+      btn.onclick = async () => {
+        btn.disabled = true;
+        btn.textContent = '⏳ Executing…';
+        let body = null;
+        if (card._textarea) {
+          try {
+            body = JSON.parse(card._textarea.value);
+          } catch (e) {
+            pre.textContent = '❌ Invalid JSON: ' + e.message;
+            btn.disabled = false;
+            btn.textContent = `▶ Execute ${method}`;
+            return;
+          }
+        }
+        const result = await callApi(endpoint, method, body);
+        pre.textContent = JSON.stringify(result.data, null, 2);
+        const badge = document.getElementById(badgeId);
+        if (result.status >= 200 && result.status < 300) {
+          badge.textContent = `✅ ${result.status}`;
+          badge.className = 'status-badge success';
+        } else {
+          badge.textContent = `❌ ${result.status || 'ERR'}`;
+          badge.className = 'status-badge error';
+        }
+        btn.textContent = `▶ Execute ${method}`;
+        btn.disabled = false;
+      };
+      card.appendChild(btn);
+      card._btn = btn;
+      return card;
+    }
+
+    // Predefined payloads
+    const riskPayload = {
+      "customer_tier": "GOLD",
+      "category": "cool_stuff",
+      "customer_state": "MH",
+      "seller_state": "KA",
+      "quantity": 1,
+      "price": 1850,
+      "order_value": 1850,
+      "freight_value": 150,
+      "gross_order_value": 2000,
+      "discount_percent": 18.0,
+      "discount_amount": 333,
+      "net_sales": 1517,
+      "customer_avg_discount": 10.0,
+      "product_avg_discount": 8.0,
+      "customer_product_avg_discount": 9.0,
+      "recommended_discount_percent": 12.0,
+      "discount_gap_percent": 6.0,
+      "warehouse_count": 2,
+      "available_stock": 500,
+      "reserved_stock": 50,
+      "warehouse_capacity": 1000,
+      "stock_pressure": 0.1,
+      "warehouse_utilization": 0.4,
+      "transport_distance_km": 200,
+      "transport_cost": 30,
+      "expected_delivery_days": 3,
+      "product_cost": 1200,
+      "margin_before_discount": 650,
+      "margin_after_discount": 317,
+      "margin_percent": 17.1,
+      "customer_transaction_count": 5,
+      "customer_previous_orders": 4,
+      "product_transaction_count": 20,
+      "product_previous_orders": 19,
+      "actual_delivery_days": 2,
+      "estimated_delivery_days": 3,
+      "delivery_delay_days": -1,
+      "payment_value": 2000,
+      "payment_installments": 1,
+      "payment_type": "credit_card",
+      "review_score": 4.5
+    };
+
+    const recPayload = {
+      "country": "United Kingdom",
+      "category": "GENERAL",
+      "customer_tier": "GOLD",
+      "market_region": "DOMESTIC",
+      "quantity": 10,
+      "price": 4.5,
+      "order_value": 45,
+      "year": 2009,
+      "month": 12,
+      "day_of_week": 0,
+      "hour": 8,
+      "is_weekend": 0,
+      "customer_previous_transactions": 12,
+      "customer_previous_quantity": 85,
+      "customer_previous_spend": 1250.5,
+      "customer_avg_order_value": 104.21,
+      "customer_purchase_frequency": 2.5,
+      "customer_total_previous_spend": 1250.5,
+      "product_previous_transactions": 150,
+      "product_previous_quantity": 1200,
+      "product_previous_price_avg": 24.8,
+      "product_popularity": 150,
+      "customer_product_previous_transactions": 4,
+      "customer_avg_previous_discount": 7.25,
+      "product_avg_previous_discount": 6.8,
+      "customer_product_avg_previous_discount": 7.1,
+      "discount_percent": 18.0,
+      "discount_amount": 45.9,
+      "discounted_unit_price": 20.91,
+      "discount_gap_percent": 10.5,
+      "tier_discount": 8.0,
+      "tier_max_discount": 20.0,
+      "price_band": "MEDIUM"
+    };
+
+    const whatIfPayload = {
+      "deal": {
+        "deal_id": "DEAL-1001",
+        "customer_id": "CUST-101",
+        "customer_tier": "GOLD",
+        "quantity": 500,
+        "base_price": 1000,
+        "product_cost": 650,
+        "current_discount_percent": 12,
+        "warehouses": [
+          {
+            "warehouse_id": "WH-A",
+            "available_stock": 300,
+            "reserved_stock": 50,
+            "capacity": 1000,
+            "current_load": 650,
+            "distance_km": 120,
+            "transport_rate_per_km": 10,
+            "processing_days": 1
+          },
+          {
+            "warehouse_id": "WH-B",
+            "available_stock": 300,
+            "reserved_stock": 20,
+            "capacity": 800,
+            "current_load": 400,
+            "distance_km": 180,
+            "transport_rate_per_km": 9,
+            "processing_days": 2
+          }
+        ],
+        "required_delivery_days": 4,
+        "customer_avg_discount": 10,
+        "customer_max_discount": 16,
+        "previous_deals": 8,
+        "previous_negotiations": 2
+      },
+      "changes": {
+        "discount_percent": 18
+      }
+    };
+
+    const batchPayload = {
+      "deal": {
+        "deal_id": "DEAL-BATCH",
+        "quantity": 100,
+        "base_price": 1000,
+        "product_cost": 600,
+        "current_discount_percent": 10,
+        "customer_tier": "GOLD"
+      },
+      "scenarios": [
+        { "discount_percent": 12 },
+        { "discount_percent": 15 },
+        { "discount_percent": 20 }
+      ]
+    };
+
+    const healthPayload = {
+      "deal": {
+        "deal_id": "DEAL-1002",
+        "customer_tier": "SILVER",
+        "quantity": 20,
+        "base_price": 2000,
+        "product_cost": 1700,
+        "discount_percent": 18,
+        "required_delivery_days": 4
+      }
+    };
+
+    const explainPayload = {
+      "deal": {
+        "deal_id": "DEAL-1003",
+        "customer_id": "CUST-101",
+        "customer_tier": "GOLD",
+        "quantity": 100,
+        "base_price": 1000,
+        "product_cost": 650,
+        "discount_percent": 12,
+        "customer_avg_discount": 10,
+        "customer_max_discount": 15,
+        "previous_deals": 10
+      },
+      "alternatives": [15, 18]
+    };
+
+    const insightsPayload = {
+      "deal": {
+        "deal_id": "DEAL-1001",
+        "customer_id": "CUST-101",
+        "customer_tier": "GOLD",
+        "quantity": 500,
+        "base_price": 1000,
+        "product_cost": 650,
+        "discount_percent": 12,
+        "required_delivery_days": 4,
+        "customer_avg_discount": 10,
+        "customer_max_discount": 16,
+        "previous_deals": 8,
+        "previous_negotiations": 2
+      }
+    };
+
+    // Build the interactive cards
+    const container = document.getElementById('cards-container');
+    const allCards = [
+      createCard('Health Check', '/health'),
+      createCard('Model Metadata', '/api/v1/ml/models'),
+      createCard('Discount Risk Classifier', '/api/v1/ml/discount-risk', 'POST', true, riskPayload),
+      createCard('Recommend Discount Regressor', '/api/v1/ml/recommended-discount', 'POST', true, recPayload),
+      createCard('What-If Simulation', '/api/v1/intelligence/what-if', 'POST', true, whatIfPayload),
+      createCard('What-If Batch Scenarios', '/api/v1/intelligence/what-if/batch', 'POST', true, batchPayload),
+      createCard('Deal Health (GET)', '/api/v1/intelligence/deal/DEAL-1002/health'),
+      createCard('Deal Health (POST)', '/api/v1/intelligence/deal/DEAL-1002/health', 'POST', true, healthPayload),
+      createCard('Explain Decision (Why & Why-Not)', '/api/v1/intelligence/explain', 'POST', true, explainPayload),
+      createCard('Customer Memory', '/api/v1/intelligence/memory/customer/CUST-001'),
+      createCard('Customer + Product Memory', '/api/v1/intelligence/memory/customer/CUST-001/product/ThinkPad'),
+      createCard('Unified Deal Intelligence Insights', '/api/v1/intelligence/deal/DEAL-1001/insights', 'POST', true, insightsPayload)
+    ];
+
+    allCards.forEach(c => container.appendChild(c));
+
+    async function runAllTests() {
+      for (const card of allCards) {
+        if (card._btn) {
+          card._btn.click();
+          await new Promise(r => setTimeout(r, 200));
+        }
+      }
+    }
+  </script>
+</body>
+</html>

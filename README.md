@@ -523,3 +523,172 @@ To run tests against a live server process:
 ```powershell
 python test_api.py --live http://localhost:5000
 ```
+
+---
+
+## 11. DealFlow360 Intelligence Engine API
+
+The Intelligence Engine delivers five interconnected capabilities with **zero database mutations**:
+1. **What-If Deal Simulator** (`POST /api/v1/intelligence/what-if` and `POST /api/v1/intelligence/what-if/batch`)
+2. **Business Memory Engine** (`GET /api/v1/intelligence/memory/customer/<customer_id>`)
+3. **Actionable Deal Health Engine** (`GET /api/v1/intelligence/deal/<deal_id>/health`)
+4. **Why / Why-Not Explanation Engine** (`POST /api/v1/intelligence/explain`)
+5. **Unified Deal Intelligence Insights** (`GET/POST /api/v1/intelligence/deal/<deal_id>/insights`)
+
+### Architecture Principle
+- **ML** $\rightarrow$ Predicts
+- **Rule Engine** $\rightarrow$ Governs
+- **Digital Twin** $\rightarrow$ Simulates
+- **Business Memory** $\rightarrow$ Provides historical behavioral context
+- **Deal Health Engine** $\rightarrow$ Identifies current & future threats
+- **Explanation Engine** $\rightarrow$ Explains decisions and alternatives
+- **Recommendation Engine** $\rightarrow$ Proposes actions
+- **Node.js Backend** $\rightarrow$ System of record; executes only after user confirmation
+
+---
+
+### Endpoint: `POST /api/v1/intelligence/what-if`
+
+#### Purpose
+Simulates proposed deal parameter adjustments (e.g. discount changes, quantity adjustments, warehouse reallocations) in an isolated, in-memory Digital Twin snapshot without modifying production quotations, inventory, or orders.
+
+#### Example Request
+```bash
+curl -X POST http://localhost:5000/api/v1/intelligence/what-if \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deal": {
+      "deal_id": "DEAL-1001",
+      "customer_id": "CUST-101",
+      "customer_tier": "GOLD",
+      "quantity": 500,
+      "base_price": 1000,
+      "product_cost": 650,
+      "current_discount_percent": 12,
+      "warehouses": [
+        {
+          "warehouse_id": "WH-A",
+          "available_stock": 300,
+          "reserved_stock": 50,
+          "capacity": 1000,
+          "current_load": 650,
+          "distance_km": 120,
+          "transport_rate_per_km": 10,
+          "processing_days": 1
+        },
+        {
+          "warehouse_id": "WH-B",
+          "available_stock": 300,
+          "reserved_stock": 20,
+          "capacity": 800,
+          "current_load": 400,
+          "distance_km": 180,
+          "transport_rate_per_km": 9,
+          "processing_days": 2
+        }
+      ],
+      "required_delivery_days": 4,
+      "customer_avg_discount": 10,
+      "customer_max_discount": 16,
+      "previous_deals": 8,
+      "previous_negotiations": 2
+    },
+    "changes": {
+      "discount_percent": 18
+    }
+  }'
+```
+
+#### Example Response
+```json
+{
+  "success": true,
+  "simulation": {
+    "deal_id": "DEAL-1001",
+    "is_simulation": true,
+    "current": {
+      "discount_percent": 12.0,
+      "margin_percent": 24.3,
+      "transport_cost": 6120.0,
+      "health_score": 83,
+      "health_status": "HEALTHY",
+      "approval_required": false,
+      "delivery_sla_met": true
+    },
+    "simulated": {
+      "discount_percent": 18.0,
+      "margin_percent": 18.9,
+      "transport_cost": 6120.0,
+      "health_score": 64,
+      "health_status": "AT_RISK",
+      "approval_required": true,
+      "delivery_sla_met": true
+    },
+    "impact": {
+      "discount_delta": 6.0,
+      "margin_delta": -5.4,
+      "margin_amount_delta": -30000.0,
+      "transport_cost_delta": 0.0,
+      "health_delta": -19,
+      "approval_status_changed": true,
+      "delivery_status_changed": false
+    },
+    "rules": {
+      "approval_required": true,
+      "approval_level": "SALES_MANAGER",
+      "approval_reasons": [
+        "Discount exceeds GOLD tier standard limit (15.0%)",
+        "Discount exceeds customer historical maximum (16.0%)"
+      ],
+      "rule_results": [
+        {
+          "rule": "customer_tier_discount_ceiling",
+          "passed": false,
+          "threshold": 15.0,
+          "actual_value": 18.0,
+          "message": "Discount (18.0%) exceeds GOLD tier ceiling (15.0%)."
+        }
+      ]
+    },
+    "fulfillment": {
+      "feasible": true,
+      "warehouse_count": 2,
+      "allocation": [
+        { "warehouse_id": "WH-A", "quantity": 250 },
+        { "warehouse_id": "WH-B", "quantity": 250 }
+      ],
+      "transport_cost": 6120.0,
+      "fulfillment_cost": 2725.0,
+      "expected_delivery_days": 3,
+      "delivery_sla_met": true
+    },
+    "ml": {
+      "model_available": true,
+      "recommended_discount_percent": 12.8,
+      "risk_probability": 0.12,
+      "risk_percentage": 12.0,
+      "risk_label": "NORMAL"
+    },
+    "recommendation": {
+      "action": "REDUCE_DISCOUNT",
+      "recommended_discount": 16.0,
+      "reasons": [
+        "18.0% discount exceeds customer maximum limit (16.0%).",
+        "Finance/Sales approval is required.",
+        "16.0% provides a better margin-risk balance without requiring exception approvals."
+      ]
+    }
+  }
+}
+```
+
+---
+
+### Endpoint: `POST /api/v1/intelligence/deal/<deal_id>/insights`
+
+Unified deal intelligence endpoint providing real-time deal health breakdown, business memory, explainable Why/Why-Not comparisons, and one-click executable actions.
+
+```powershell
+python test_intelligence.py
+```
+
