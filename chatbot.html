@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DealFlow360 - Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* Exact color tokens from DealFlow360 */
+        :root {
+            --color-accent: #4338ca;
+            --color-accent-hover: #3730a3;
+            --color-accent-active: #312e81;
+            --color-accent-subtle: #eef2ff;
+            --color-accent-border: #c7d2fe;
+            --color-paper-0: #f8fafc;
+            --color-paper-1: #ffffff;
+            --color-paper-2: #f1f5f9;
+            --color-paper-3: #e2e8f0;
+            --color-text-primary: #0f172a;
+            --color-text-secondary: #475569;
+            --color-text-muted: #64748b;
+            --color-border-subtle: #e2e8f0;
+            --color-border-strong: #cbd5e1;
+            --color-success: #059669;
+            --color-warning: #d97706;
+            --color-danger: #dc2626;
+        }
+
+        .chatbot-toggle {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chatbot-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(67, 56, 202, 0.4);
+        }
+        .chatbot-popup {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: bottom right;
+        }
+        .chatbot-popup.hidden {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+            pointer-events: none;
+        }
+        .chat-message {
+            animation: fadeInUp 0.3s ease-out;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            margin: 0 2px;
+            animation: typingBounce 1.4s infinite both;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-6px);
+                opacity: 1;
+            }
+        }
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+        .quick-reply-btn {
+            transition: all 0.2s ease;
+            background: var(--color-paper-2);
+            border: 1px solid var(--color-border-subtle);
+            color: var(--color-text-secondary);
+        }
+        .quick-reply-btn:hover {
+            background: var(--color-accent-subtle);
+            border-color: var(--color-accent-border);
+            color: var(--color-accent);
+        }
+        .gradient-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+        }
+        .bot-avatar {
+            background: var(--color-accent-subtle);
+            color: var(--color-accent);
+        }
+        .user-avatar {
+            background: var(--color-accent);
+            color: white;
+        }
+        .user-bubble {
+            background: var(--color-accent);
+            color: white;
+        }
+        .bot-bubble {
+            background: var(--color-paper-1);
+            border: 1px solid var(--color-border-subtle);
+            color: var(--color-text-primary);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen" style="background-color: var(--color-paper-0);">
+
+    <!-- Main Page Content (Your existing Dashboard) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Your existing dashboard content goes here -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center" style="background: var(--color-paper-1); border-color: var(--color-border-subtle);">
+            <h1 class="text-2xl font-bold text-slate-900" style="color: var(--color-text-primary);">DealFlow 360 Dashboard</h1>
+            <p class="text-slate-500 mt-2" style="color: var(--color-text-secondary);">Your existing dashboard content appears here.</p>
+            <p class="text-slate-400 text-sm mt-4" style="color: var(--color-text-muted);">Click the chat bubble in the bottom-right corner to open the assistant.</p>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- CHATBOT COMPONENT - Exact DealFlow360 Theme                  -->
+    <!-- ============================================================ -->
+    <div id="chatbot-container" class="fixed bottom-6 right-6 z-50">
+
+        <!-- Toggle Button -->
+        <button
+            id="chatbot-toggle"
+            class="chatbot-toggle w-14 h-14 rounded-full bg-[#4338ca] text-white shadow-lg shadow-[#4338ca]/30 hover:bg-[#3730a3] flex items-center justify-center text-2xl"
+            aria-label="Open chat assistant"
+            style="background: var(--color-accent);"
+        >
+            <i class="fas fa-comment-dots"></i>
+        </button>
+
+        <!-- Chat Popup -->
+        <div
+            id="chatbot-popup"
+            class="chatbot-popup absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden hidden"
+            style="background: var(--color-paper-1); border-color: var(--color-border-subtle);"
+        >
+            <!-- Header - Exact gradient from dashboard -->
+            <div class="gradient-header px-5 py-4 flex items-center justify-between" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-bold">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-semibold text-sm">DealFlow Assistant</h3>
+                        <p class="text-indigo-200 text-xs" style="color: #c7d2fe;">Online • Ready to help</p>
+                    </div>
+                </div>
+                <button
+                    id="chatbot-close"
+                    class="text-white/70 hover:text-white transition-colors"
+                >
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages" class="h-80 overflow-y-auto p-4 space-y-3 chat-scroll" style="background: var(--color-paper-0);">
+                <!-- Bot Welcome Message -->
+                <div class="flex items-start gap-2.5 chat-message">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 bot-avatar" style="background: var(--color-accent-subtle); color: var(--color-accent);">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="bot-bubble rounded-xl rounded-tl-none px-4 py-2.5 shadow-sm max-w-[85%]" style="background: var(--color-paper-1); border-color: var(--color-border-subtle);">
+                        <p class="text-sm text-slate-700" style="color: var(--color-text-primary);">
+                            👋 Hi there! I'm your DealFlow assistant. I can help you with:
+                        </p>
+                        <ul class="text-xs text-slate-500 mt-1.5 space-y-0.5 list-disc list-inside" style="color: var(--color-text-secondary);">
+                            <li>Quote & product questions</li>
+                            <li>Discount recommendations</li>
+                            <li>Delivery estimates</li>
+                            <li>Approval status updates</li>
+                        </ul>
+                        <p class="text-xs text-slate-400 mt-1.5" style="color: var(--color-text-muted);">How can I assist you today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Reply Buttons -->
+            <div class="px-4 py-2 bg-white border-t border-slate-100 flex gap-1.5 flex-wrap" style="background: var(--color-paper-1); border-color: var(--color-border-subtle);">
+                <button
+                    class="quick-reply-btn text-xs px-3 py-1.5 rounded-full transition-colors"
+                    data-question="What's the status of my quote?"
+                    style="background: var(--color-paper-2); border-color: var(--color-border-subtle); color: var(--color-text-secondary);"
+                >
+                    📋 Quote status
+                </button>
+                <button
+                    class="quick-reply-btn text-xs px-3 py-1.5 rounded-full transition-colors"
+                    data-question="Can I get a better discount?"
+                >
+                    💰 Discount
+                </button>
+                <button
+                    class="quick-reply-btn text-xs px-3 py-1.5 rounded-full transition-colors"
+                    data-question="When will my order arrive?"
+                >
+                    🚚 Delivery
+                </button>
+                <button
+                    class="quick-reply-btn text-xs px-3 py-1.5 rounded-full transition-colors"
+                    data-question="Tell me about warranty"
+                >
+                    🛡️ Warranty
+                </button>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 bg-white border-t border-slate-200 flex gap-2" style="background: var(--color-paper-1); border-color: var(--color-border-subtle);">
+                <input
+                    id="chat-input"
+                    type="text"
+                    placeholder="Type your message..."
+                    class="flex-1 px-4 py-2 text-sm border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#4338ca] focus:border-transparent transition-shadow"
+                    style="border-color: var(--color-border-strong);"
+                    autocomplete="off"
+                />
+                <button
+                    id="chat-send"
+                    class="w-10 h-10 rounded-full bg-[#4338ca] text-white hover:bg-[#3730a3] transition-colors flex items-center justify-center flex-shrink-0"
+                    style="background: var(--color-accent);"
+                >
+                    <i class="fas fa-paper-plane text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- CHATBOT JAVASCRIPT                                            -->
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // DOM Elements
+            const toggleBtn = document.getElementById('chatbot-toggle');
+            const popup = document.getElementById('chatbot-popup');
+            const closeBtn = document.getElementById('chatbot-close');
+            const messagesContainer = document.getElementById('chat-messages');
+            const inputField = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('chat-send');
+
+            // Quick reply buttons
+            const quickReplyBtns = document.querySelectorAll('.quick-reply-btn');
+
+            // State
+            let isOpen = false;
+
+            // ============================================================
+            // 1. Toggle Popup
+            // ============================================================
+            function togglePopup() {
+                isOpen = !isOpen;
+                if (isOpen) {
+                    popup.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        popup.classList.remove('opacity-0', 'scale-95', 'translate-y-2');
+                    });
+                    inputField.focus();
+                } else {
+                    popup.classList.add('opacity-0', 'scale-95', 'translate-y-2');
+                    setTimeout(() => {
+                        popup.classList.add('hidden');
+                    }, 300);
+                }
+            }
+
+            toggleBtn.addEventListener('click', togglePopup);
+            closeBtn.addEventListener('click', togglePopup);
+
+            // ============================================================
+            // 2. Add Message to Chat
+            // ============================================================
+            function addMessage(text, sender = 'user') {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `flex items-start gap-2.5 chat-message ${sender === 'user' ? 'flex-row-reverse' : ''}`;
+
+                const avatar = document.createElement('div');
+                avatar.className = `w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
+                    sender === 'user' ? 'user-avatar' : 'bot-avatar'
+                }`;
+                avatar.innerHTML = sender === 'user'
+                    ? '<i class="fas fa-user"></i>'
+                    : '<i class="fas fa-robot"></i>';
+
+                const bubble = document.createElement('div');
+                bubble.className = `${sender === 'user' ? 'user-bubble' : 'bot-bubble'} rounded-xl ${sender === 'user' ? 'rounded-tr-none' : 'rounded-tl-none'} px-4 py-2.5 shadow-sm max-w-[85%]`;
+                bubble.innerHTML = `<p class="text-sm ${sender === 'user' ? 'text-white' : 'text-slate-700'}">${text}</p>`;
+
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(bubble);
+                messagesContainer.appendChild(messageDiv);
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // ============================================================
+            // 3. Show Typing Indicator
+            // ============================================================
+            function showTyping() {
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typing-indicator';
+                typingDiv.className = 'flex items-start gap-2.5 chat-message';
+                typingDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="bot-bubble rounded-xl rounded-tl-none px-4 py-3 shadow-sm">
+                        <div class="typing-indicator flex gap-1">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(typingDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function hideTyping() {
+                const typing = document.getElementById('typing-indicator');
+                if (typing) typing.remove();
+            }
+
+            // ============================================================
+            // 4. Bot Response Logic
+            // ============================================================
+            function getBotResponse(message) {
+                const lower = message.toLowerCase();
+
+                if (lower.includes('discount') || lower.includes('%') || lower.includes('price cut') || lower.includes('cheaper')) {
+                    return {
+                        reply: "💰 I can help with that! Based on your Silver tier and order value of $12,400, I'd recommend a **12-15%** discount. A 20% discount would require manager approval. Would you like me to submit a 15% discount request for you?",
+                        quickReplies: ['Yes, request 15%', 'No, I want 18%', 'Tell me more']
+                    };
+                }
+
+                if (lower.includes('status') || lower.includes('approval') || lower.includes('pending') || lower.includes('review')) {
+                    return {
+                        reply: "📋 Your quotation is currently **Under Negotiation**. The sales team is reviewing your request. We typically respond within **2-4 business hours**. I'll notify you as soon as there's an update!",
+                        quickReplies: ['Check again later', 'Contact support', 'View quote details']
+                    };
+                }
+
+                if (lower.includes('delivery') || lower.includes('ship') || lower.includes('arrive') || lower.includes('shipping')) {
+                    return {
+                        reply: "🚚 Your order is estimated to be delivered in **3-5 business days** after confirmation. We use express shipping for all enterprise orders. Need expedited delivery? Let me check availability for you.",
+                        quickReplies: ['Expedite delivery', 'Track order', 'Change address']
+                    };
+                }
+
+                if (lower.includes('warranty') || lower.includes('coverage') || lower.includes('protect') || lower.includes('guarantee')) {
+                    return {
+                        reply: "🛡️ The **Extended Warranty** covers hardware defects and on-site repairs for **3 years**. It also includes priority support and accidental damage protection. Would you like to add it to your order?",
+                        quickReplies: ['Add warranty', 'Tell me more', 'No thanks']
+                    };
+                }
+
+                if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+                    return {
+                        reply: "👋 Hello there! I'm here to help with your quotation. You can ask me about discounts, delivery, product details, or approval status. What would you like to know?",
+                        quickReplies: ['Discount options', 'Delivery time', 'Quote status']
+                    };
+                }
+
+                if (lower.includes('thank')) {
+                    return {
+                        reply: "😊 You're welcome! Is there anything else I can help you with?",
+                        quickReplies: ['Yes', 'No, that\'s all', 'Contact support']
+                    };
+                }
+
+                return {
+                    reply: "🤔 I'm not sure I understand. I can help with:\n• Quote status\n• Discount recommendations\n• Delivery estimates\n• Product details\n• Warranty information\n\nCould you rephrase your question?",
+                    quickReplies: ['Quote status', 'Discount', 'Delivery', 'Warranty']
+                };
+            }
+
+            // ============================================================
+            // 5. Send Message Handler
+            // ============================================================
+            function handleSendMessage() {
+                const text = inputField.value.trim();
+                if (!text) return;
+
+                addMessage(text, 'user');
+                inputField.value = '';
+                inputField.focus();
+
+                showTyping();
+
+                const delay = 300 + Math.random() * 500;
+                setTimeout(() => {
+                    hideTyping();
+
+                    const response = getBotResponse(text);
+                    addMessage(response.reply, 'bot');
+
+                    if (response.quickReplies && response.quickReplies.length > 0) {
+                        const container = document.querySelector('.quick-reply-btn').parentElement;
+                        container.innerHTML = response.quickReplies.map(q =>
+                            `<button class="quick-reply-btn text-xs px-3 py-1.5 rounded-full transition-colors" data-question="${q}">${q}</button>`
+                        ).join('');
+
+                        document.querySelectorAll('.quick-reply-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                inputField.value = this.getAttribute('data-question');
+                                handleSendMessage();
+                            });
+                        });
+                    }
+                }, delay);
+            }
+
+            sendBtn.addEventListener('click', handleSendMessage);
+            inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleSendMessage();
+            });
+
+            quickReplyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    inputField.value = this.getAttribute('data-question');
+                    handleSendMessage();
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isOpen) {
+                    togglePopup();
+                }
+            });
+
+            console.log('DealFlow Assistant loaded! 🚀');
+        })();
+    </script>
+
+</body>
+</html>
