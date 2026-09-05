@@ -1,0 +1,17 @@
+{
+  "name": "search-engine-demo",
+  "version": "1.0.0",
+  "description": "DealFlow360 Standalone Tokenized Full-Text Search Engine Demo",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "test": "node test_search.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "fastest-levenshtein": "^1.0.16",
+    "mysql2": "^3.12.0"
+  }
+}

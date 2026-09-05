@@ -36,6 +36,17 @@ yarn-error.log*
 skills-lock.json
 backend/skills-lock.json
 
+# ── Python ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+venv/
+.venv/
+env/
+.env/
+
 # ── Misc ─────────────────────────────────────────────────────────
 .cache/
 .parcel-cache/
+

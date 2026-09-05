@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealFlow360 - Next Action Prediction ERP</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <!-- Brand -->
+                    <a href="dashboard.html" class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                            ✦
+                        </div>
+                        <span class="font-bold text-lg text-slate-900 tracking-tight">DealFlow<span class="text-blue-600">360</span></span>
+                    </a>
+                    <!-- Nav Links -->
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="deal_cockpit.html" class="px-3.5 py-2 text-sm font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-1.5"><span>⚡</span> Anticipatory Cockpit</a>
+                        <a href="dashboard.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Dashboard</a>
+                        <a href="products.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Products</a>
+                        <a href="quotations.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Quotations</a>
+                        <a href="customers.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Customers</a>
+                        <a href="orders.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Orders</a>
+                        <a href="purchases.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Purchases</a>
+                    </div>
+                </div>
+
+                <!-- Right Session & Cart Header -->
+                <div class="flex items-center gap-3">
+                    <div class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full border border-slate-200 font-mono">
+                        Session: <span id="current-session-badge" class="font-bold text-slate-800">...</span>
+                    </div>
+                    <a href="purchases.html" class="relative p-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span id="cart-count" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- Header -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Next Action Intelligence Dashboard</h1>
+                <p class="text-sm text-slate-500 mt-1">Machine-learning next-action recommendation engine & real-time ERP telemetry.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="products.html" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center gap-2">
+                    <span>Try Demo Flow</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- 4 Top Analytics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Model Top-1 Accuracy</div>
+                <div class="text-2xl font-bold text-slate-900" id="stat-top1">79.5%</div>
+                <div class="text-xs text-emerald-600 font-medium mt-1">✓ Tested on 3,771 sequences</div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Model Top-3 Accuracy</div>
+                <div class="text-2xl font-bold text-slate-900" id="stat-top3">98.3%</div>
+                <div class="text-xs text-blue-600 font-medium mt-1">✦ High candidate coverage</div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Recommendations Shown</div>
+                <div class="text-2xl font-bold text-slate-900" id="stat-shown">0</div>
+                <div class="text-xs text-slate-500 font-medium mt-1">Smart trigger threshold: ≥ 50%</div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Recommendation CTR</div>
+                <div class="text-2xl font-bold text-slate-900" id="stat-ctr">0.0%</div>
+                <div class="text-xs text-slate-500 font-medium mt-1"><span id="stat-clicked">0</span> user acceptances</div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout: Top Transitions & Live Action Stream -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left 2 Cols: Learned Transitions Table -->
+            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">Learned Next-Action Transitions</h2>
+                        <p class="text-xs text-slate-500">Historical probabilistic relationships extracted from sequence training data.</p>
+                    </div>
+                    <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">Random Forest ML</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <th class="pb-3">Completed Action (X)</th>
+                                <th class="pb-3"></th>
+                                <th class="pb-3">Predicted Next Action (Y)</th>
+                                <th class="pb-3 text-right">Probability</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-transitions-tbody" class="divide-y divide-slate-100 text-slate-700">
+                            <!-- Populated dynamically -->
+                            <tr><td colspan="4" class="py-4 text-center text-slate-400 text-xs">Loading learned transitions...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Col: Live Session Stream -->
+            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-slate-900">Session Activity Timeline</h2>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                </div>
+                <p class="text-xs text-slate-500 mb-4">Real-time actions tracked in your active ERP session.</p>
+
+                <div id="session-action-timeline" class="space-y-1 max-h-[300px] overflow-y-auto">
+                    <div id="timeline-empty" class="text-center py-8 text-xs text-slate-400">
+                        No actions in this session yet.<br>
+                        Click around products or quotations to generate events.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+            DealFlow360 ML Recommendation Engine · Intelligent, Self-Governing Sales Operations Platform
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/actionTracker.js"></script>
+    <script src="js/recommendation.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Track dashboard visit
+            trackAction('open_dashboard');
+
+            // Load live dashboard stats
+            const stats = await API.getDashboardStats();
+            if (stats) {
+                document.getElementById('stat-top1').textContent = `${stats.model_top1_accuracy}%`;
+                document.getElementById('stat-top3').textContent = `${stats.model_top3_accuracy}%`;
+                document.getElementById('stat-shown').textContent = stats.recommendations_shown;
+                document.getElementById('stat-ctr').textContent = `${stats.ctr_percent}%`;
+                document.getElementById('stat-clicked').textContent = stats.recommendations_clicked;
+
+                const tbody = document.getElementById('top-transitions-tbody');
+                if (stats.top_transitions && stats.top_transitions.length > 0) {
+                    tbody.innerHTML = stats.top_transitions.map(t => `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="py-3 font-semibold text-slate-900">${t.current_action}</td>
+                            <td class="py-3 text-slate-400">→</td>
+                            <td class="py-3 font-semibold text-blue-600">${t.recommended_action}</td>
+                            <td class="py-3 text-right font-mono font-medium text-slate-800">${t.avg_probability}%</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

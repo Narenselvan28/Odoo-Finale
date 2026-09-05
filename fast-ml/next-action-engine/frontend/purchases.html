@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Purchases - DealFlow360 ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="dashboard.html" class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-sm">✦</div>
+                        <span class="font-bold text-lg text-slate-900 tracking-tight">DealFlow<span class="text-blue-600">360</span></span>
+                    </a>
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="dashboard.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Dashboard</a>
+                        <a href="products.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Products</a>
+                        <a href="quotations.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Quotations</a>
+                        <a href="customers.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Customers</a>
+                        <a href="orders.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Orders</a>
+                        <a href="purchases.html" class="px-3.5 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">Purchases</a>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full border border-slate-200 font-mono">
+                        Session: <span id="current-session-badge" class="font-bold text-slate-800">...</span>
+                    </div>
+                    <a href="purchases.html" class="relative p-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span id="cart-count" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Active Purchases & Cart</h1>
+                <p class="text-sm text-slate-500 mt-1">Review items purchased during your active session.</p>
+            </div>
+            <button onclick="clearPurchases()" class="px-3.5 py-1.5 border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-600 rounded-lg transition-colors">
+                Clear Session Cart
+            </button>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-8 p-6">
+            <div id="cart-items-container" class="space-y-4">
+                <!-- Dynamic cart list -->
+            </div>
+
+            <div id="cart-summary" class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                <div>
+                    <div class="text-xs text-slate-400">Total Purchased Items: <span id="summary-count" class="font-bold text-slate-800">0</span></div>
+                </div>
+                <button onclick="finalizeCheckout()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg shadow-sm">
+                    Checkout & Confirm Order
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+            DealFlow360 Next Action ERP · Interactive Machine Learning Recommendation Demo
+        </div>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script src="js/actionTracker.js"></script>
+    <script src="js/recommendation.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            trackAction('open_purchases');
+            renderCart();
+        });
+
+        function renderCart() {
+            const cart = JSON.parse(sessionStorage.getItem('dealflow360_cart') || '[]');
+            const container = document.getElementById('cart-items-container');
+            const countEl = document.getElementById('summary-count');
+            countEl.textContent = cart.length;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-400 text-sm">
+                        No purchased items in your session yet.<br>
+                        <a href="products.html" class="text-blue-600 font-semibold underline mt-2 inline-block">Browse Product Catalog</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = cart.map((item, idx) => `
+                <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                            ${idx + 1}
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-slate-900">${item.name}</div>
+                            <div class="text-xs text-slate-400">Item ID: ${item.id} · Added at ${item.addedAt || 'Just now'}</div>
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">Confirmed In Order</span>
+                </div>
+            `).join('');
+        }
+
+        function clearPurchases() {
+            sessionStorage.removeItem('dealflow360_cart');
+            document.getElementById('cart-count').textContent = 0;
+            renderCart();
+            showToast('Cleared session cart.');
+        }
+
+        async function finalizeCheckout() {
+            showToast('✓ Order checkout finalized!');
+            await trackAction('create_order', { cart_items_count: JSON.parse(sessionStorage.getItem('dealflow360_cart') || '[]').length });
+            setTimeout(() => {
+                window.location.href = 'orders.html';
+            }, 800);
+        }
+    </script>
+</body>
+</html>
