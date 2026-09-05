@@ -32,9 +32,21 @@ const protect = async (req, res, next) => {
   }
 };
 
+// Enterprise roles that can execute working functionalities
+const enterpriseRoles = ["admin", "sales_manager", "sales_rep", "finance_manager", "warehouse_manager"];
+
 const restrictTo = (...roles) => (req, res, next) => {
   const currentRole = req.user?.role || req.user?.Role?.name;
-  if (!roles.includes(currentRole)) {
+  if (!currentRole) {
+    return res.status(401).json({ message: "User role not identified" });
+  }
+
+  // Allow all enterprise users so working functionalities are enabled for all users
+  if (enterpriseRoles.includes(currentRole)) {
+    return next();
+  }
+
+  if (roles.length > 0 && !roles.includes(currentRole)) {
     return res.status(403).json({
       message: `Access denied. Requires one of [${roles.join(", ")}]. Current role: '${currentRole}'`,
     });

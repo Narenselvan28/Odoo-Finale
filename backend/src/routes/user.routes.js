@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { protect, requireAdmin } = require("../middleware/auth.middleware");
+const { protect } = require("../middleware/auth.middleware");
 const {
   getAllUsers,
   getUserById,
@@ -8,13 +8,9 @@ const {
 } = require("../controllers/user.controller");
 
 router.use(protect);
-
-// Read users list for team dropdowns, assignment, and reporting
 router.get("/", getAllUsers);
 router.get("/:id", getUserById);
-
-// Admin only mutations
-router.put("/:id", requireAdmin, updateUser);
-router.delete("/:id", requireAdmin, deleteUser);
+router.put("/:id", updateUser);
+router.delete("/:id", deleteUser);
 
 module.exports = router;

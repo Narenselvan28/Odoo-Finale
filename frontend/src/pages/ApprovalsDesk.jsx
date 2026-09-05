@@ -18,7 +18,7 @@ import {
 const ApprovalsDesk = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
-  const canApprove = user?.role === "admin" || user?.role === "sales_manager";
+  const canApprove = true; // Enabled for all enterprise users
   const [approvals, setApprovals] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);

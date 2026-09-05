@@ -55,18 +55,20 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio" }) => {
 
   const roleMeta = getRoleBadgeStyle(userRole);
 
+  const allRoles = ["admin", "sales_manager", "sales_rep", "finance_manager", "warehouse_manager"];
+
   const allNavSections = [
     {
       title: "Core Operations",
-      roles: ["admin", "sales_manager", "sales_rep", "finance_manager", "warehouse_manager"],
+      roles: allRoles,
       items: [
         { label: "Dashboard Cockpit", path: "/dashboard", icon: LayoutDashboard },
-        { label: "Pricing Studio (CPQ)", path: "/cpq", icon: Calculator, badge: "Flagship", roles: ["admin", "sales_manager", "sales_rep"] },
+        { label: "Pricing Studio (CPQ)", path: "/cpq", icon: Calculator, badge: "Flagship" },
       ],
     },
     {
       title: "Sales & Governance",
-      roles: ["admin", "sales_manager", "sales_rep", "finance_manager"],
+      roles: allRoles,
       items: [
         { label: "Quotations Ledger", path: "/quotations", icon: FileSpreadsheet },
         { label: "Pipeline Kanban", path: "/pipeline", icon: Kanban, badge: "Live" },
@@ -74,13 +76,13 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio" }) => {
           label: "Approvals Queue",
           path: "/approvals",
           icon: CheckSquare,
-          badge: userRole === "admin" || userRole === "sales_manager" ? "Director" : "View Only",
+          badge: userRole === "admin" || userRole === "sales_manager" ? "Director" : userRole === "finance_manager" ? "L2 Finance" : "Review",
         },
       ],
     },
     {
       title: "Catalog & Accounts",
-      roles: ["admin", "sales_manager", "sales_rep"],
+      roles: allRoles,
       items: [
         { label: "Products & Rules", path: "/catalog", icon: Boxes },
         { label: "Customers & Tiers", path: "/customers", icon: Users },
@@ -88,21 +90,21 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio" }) => {
     },
     {
       title: "Supply & Logistics",
-      roles: ["admin", "warehouse_manager"],
+      roles: allRoles,
       items: [
-        { label: "Inventory & Stock", path: "/inventory", icon: Warehouse, badge: userRole === "warehouse_manager" ? "Primary" : null },
+        { label: "Inventory & Stock", path: "/inventory", icon: Warehouse, badge: userRole === "warehouse_manager" ? "Lead" : null },
       ],
     },
     {
       title: "Revenue & Billing",
-      roles: ["admin", "finance_manager"],
+      roles: allRoles,
       items: [
-        { label: "Invoices & Subscriptions", path: "/billing", icon: Receipt, badge: userRole === "finance_manager" ? "Primary" : null },
+        { label: "Invoices & Subscriptions", path: "/billing", icon: Receipt, badge: userRole === "finance_manager" ? "Lead" : null },
       ],
     },
     {
       title: "Deal Telemetry & Ops",
-      roles: ["admin", "sales_manager", "finance_manager"],
+      roles: allRoles,
       items: [
         { label: "Deal Intelligence", path: "/intelligence", icon: Activity },
         { label: "Telemetry & Reports", path: "/reporting", icon: BarChart3, badge: "Analytics" },
@@ -110,15 +112,15 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio" }) => {
     },
     {
       title: "System Governance",
-      roles: ["admin"],
+      roles: allRoles,
       items: [
-        { label: "Admin & Audit", path: "/users", icon: ShieldCheck, badge: "Superuser" },
+        { label: "Admin & Audit", path: "/users", icon: ShieldCheck, badge: userRole === "admin" ? "Superuser" : "Audit" },
       ],
     },
   ];
 
-  // Filter sections by role
-  const visibleSections = allNavSections.filter((sec) => sec.roles.includes(userRole));
+  // All sections are enabled for all users
+  const visibleSections = allNavSections;
 
   return (
     <div className="app-shell">
