@@ -439,6 +439,7 @@ const Dashboard = () => {
                           </Link>
                         </td>
                         <td>
+                          
                           <div style={{ fontWeight: 600 }}>
                             {q.Customer?.name || q.customer_name || `Customer #${q.customer_id}`}
                           </div>
