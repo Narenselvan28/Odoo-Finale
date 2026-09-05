@@ -37,6 +37,13 @@ class MLAdapter:
             base_price = float(deal_data.get("base_price", deal_data.get("price", 100.0)))
             discount_pct = float(deal_data.get("discount_percent", deal_data.get("current_discount_percent", 10.0)))
             customer_tier = str(deal_data.get("customer_tier", "GOLD")).upper()
+            delivery_days = float(deal_data.get("required_delivery_days", deal_data.get("delivery_days", deal_data.get("delivery_lead_time_days", 7.0))))
+            opt_services = str(deal_data.get("optional_services", "NONE")).upper()
+            opt_count = float(deal_data.get("optional_services_count", 1.0 if opt_services != "NONE" else 0.0))
+            opt_fee = float(deal_data.get("optional_services_fee", 0.0))
+            category = str(deal_data.get("category", deal_data.get("product_category", "GENERAL"))).upper()
+            product_tier = str(deal_data.get("product_tier", "STANDARD")).upper()
+            sel_prod_count = float(deal_data.get("selected_products_count", 1.0))
 
             payload = sample_input
             payload.update({
@@ -44,11 +51,17 @@ class MLAdapter:
                 "price": base_price,
                 "order_value": quantity * base_price,
                 "customer_tier": customer_tier,
-                "discount_percent": discount_pct,
-                "discount_amount": (quantity * base_price) * (discount_pct / 100.0),
-                "discounted_unit_price": base_price * (1.0 - (discount_pct / 100.0)),
+                "delivery_lead_time_days": delivery_days,
+                "is_expedited_delivery": 1.0 if delivery_days <= 3.0 else 0.0,
+                "optional_services": opt_services,
+                "optional_services_count": opt_count,
+                "optional_services_fee": opt_fee,
+                "category": category,
+                "product_tier": product_tier,
+                "selected_products_count": sel_prod_count,
+                "requested_discount_percent": discount_pct,
                 "customer_avg_previous_discount": float(deal_data.get("customer_avg_discount", 10.0)),
-                "tier_discount": 10.0 if customer_tier == "GOLD" else (15.0 if customer_tier == "PLATINUM" else 5.0),
+                "tier_discount": 12.0 if customer_tier == "GOLD" else (16.0 if customer_tier == "PLATINUM" else (8.0 if customer_tier == "SILVER" else 5.0)),
                 "tier_max_discount": float(deal_data.get("customer_max_discount", 20.0))
             })
 

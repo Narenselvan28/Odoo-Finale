@@ -14,6 +14,7 @@ from routes.meta import meta_bp
 from routes.classifier import classifier_bp
 from routes.regressor import regressor_bp
 from routes.intelligence import intelligence_bp
+from routes.customer_chat import customer_chat_bp
 
 # Load environment configuration
 load_dotenv()
@@ -48,6 +49,7 @@ def create_app():
     app.register_blueprint(classifier_bp)
     app.register_blueprint(regressor_bp)
     app.register_blueprint(intelligence_bp)
+    app.register_blueprint(customer_chat_bp)
 
     # Serve the static test UI at root
     @app.route("/")

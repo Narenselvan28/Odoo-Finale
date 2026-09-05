@@ -1,0 +1,7 @@
+{
+  "embedding_model": "all-MiniLM-L6-v2",
+  "dimension": 384,
+  "normalize_embeddings": true,
+  "pooling": "mean",
+  "max_seq_length": 128
+}
