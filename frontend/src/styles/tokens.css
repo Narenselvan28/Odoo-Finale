@@ -8,6 +8,44 @@
    - Light Gray (#F7F7F7) → Secondary Background
    ============================================================ */
 
+/* ============================================================
+   SPACE GROTESK · SCOPED STRICTLY TO DIGITS (0-9) & NUMERIC SYMBOLS
+   Unicode Range U+0030-0039 guarantees letters & words
+   always render in Outfit / IBM Plex Sans, while numbers render in Space Grotesk.
+   ============================================================ */
+@font-face {
+  font-family: 'Space Grotesk Numbers';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUUsj.ttf') format('truetype');
+  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+}
+@font-face {
+  font-family: 'Space Grotesk Numbers';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUUsj.ttf') format('truetype');
+  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+}
+@font-face {
+  font-family: 'Space Grotesk Numbers';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj42Vksj.ttf') format('truetype');
+  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+}
+@font-face {
+  font-family: 'Space Grotesk Numbers';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVksj.ttf') format('truetype');
+  unicode-range: U+0030-0039, U+0024, U+0025, U+002B, U+002D, U+002E, U+002C;
+}
+
 /* ===== LIGHT MODE (Default) ===== */
 :root {
   /* Brand Accents - #714B67 */
@@ -60,10 +98,10 @@
   --radius-full: 9999px;
 
   /* Typography Tokens */
-  --font: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-number: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font: 'Space Grotesk Numbers', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk Numbers', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Space Grotesk Numbers', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-number: 'Space Grotesk Numbers', 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Transitions */
