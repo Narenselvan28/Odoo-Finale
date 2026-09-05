@@ -44,9 +44,9 @@ code, kbd, samp, pre {
   font-family: var(--font-mono);
 }
 
-.tnum {
+.tnum, [data-num], .numeric, .num-display {
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono);
+  font-family: var(--font-number);
 }
 
 /* ── App Shell & Full Width Container ─────────────────────── */
@@ -325,7 +325,9 @@ code, kbd, samp, pre {
   font-weight: 800;
   margin-top: 4px;
   color: var(--text-heading);
-  font-family: var(--font-mono);
+  font-family: var(--font-number);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 .stat-card .value.orange {
   color: var(--orange);

@@ -59,10 +59,11 @@
   --radius-xl: 8px;
   --radius-full: 9999px;
 
-  /* Typography Tokens (First UI: Outfit Display + IBM Plex Sans Body + IBM Plex Mono) */
+  /* Typography Tokens */
   --font: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-number: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Transitions */
