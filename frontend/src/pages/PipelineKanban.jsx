@@ -3,6 +3,7 @@ import AppLayout from "../components/layout/AppLayout";
 import { quotationsApi, usersApi } from "../api";
 import { useToast } from "../context/ToastContext";
 import { Link } from "react-router-dom";
+import { formatCurrencyINR, formatCompactINR } from "../utils/formatters";
 import {
   Kanban,
   Search,
@@ -133,7 +134,7 @@ const PipelineKanban = () => {
         <div className="metric-card">
           <div className="metric-label">Total Pipeline Volume</div>
           <div className="metric-value tnum" style={{ color: "var(--color-accent)" }}>
-            ₹{totalPipelineValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            {formatCompactINR(totalPipelineValue)}
           </div>
           <div className="metric-delta positive">
             <TrendingUp size={12} />
@@ -157,7 +158,7 @@ const PipelineKanban = () => {
         <div className="metric-card">
           <div className="metric-label">Confirmed Won Revenue</div>
           <div className="metric-value tnum" style={{ color: "var(--color-success)" }}>
-            ₹{confirmedRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            {formatCompactINR(confirmedRevenue)}
           </div>
           <div className="metric-delta positive">
             <span>Customer Accepted Orders</span>
@@ -290,7 +291,7 @@ const PipelineKanban = () => {
                   </span>
                 </div>
                 <div className="tnum" style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                  ₹{stageTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  {formatCompactINR(stageTotal)}
                 </div>
               </div>
 
@@ -377,7 +378,7 @@ const PipelineKanban = () => {
                         >
                           <span style={{ color: "var(--color-text-muted)", fontSize: "0.75rem" }}>Deal Value:</span>
                           <strong className="tnum" style={{ color: "var(--text-heading)" }}>
-                            ₹{dealAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {formatCurrencyINR(dealAmount, 2)}
                           </strong>
                         </div>
 

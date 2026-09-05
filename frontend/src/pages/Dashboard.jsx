@@ -9,6 +9,7 @@ import {
   dealEventsApi,
   dealHealthApi,
 } from "../api";
+import { formatINR, formatCompactINR, formatCurrencyINR } from "../utils/formatters";
 import { Link } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -261,7 +262,7 @@ const Dashboard = () => {
               {openQuotesCount}
             </div>
             <div className="hero-kpi-sub">
-              {openQuotesCount} active deals · ₹{openPipelineVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              {openQuotesCount} active deals · {formatCompactINR(openPipelineVolume)}
             </div>
           </div>
           <div className="hero-kpi-link">
@@ -327,8 +328,8 @@ const Dashboard = () => {
                 <TrendingUp size={16} color="var(--orange)" />
                 <span style={{ fontWeight: 700, fontSize: "13px" }}>Live Commercial Pipeline Health</span>
               </div>
-              <span className="badge badge-orange tnum">
-                Total ₹{openPipelineVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              <span className="badge badge-orange tnum" title={formatCurrencyINR(openPipelineVolume, 0)}>
+                Total {formatCompactINR(openPipelineVolume)}
               </span>
             </div>
 
@@ -460,10 +461,7 @@ const Dashboard = () => {
                           </span>
                         </td>
                         <td className="tnum" style={{ fontWeight: 700 }}>
-                          ₹{Number(q.total_amount || 0).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {formatCurrencyINR(q.total_amount, 2)}
                         </td>
                         <td className="tnum" style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>
                           {q.created_at ? new Date(q.created_at).toLocaleDateString() : "Recent"}

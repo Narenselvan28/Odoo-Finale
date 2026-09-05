@@ -128,8 +128,8 @@ const warehouseNames = ["Mumbai Central WH","Delhi North WH","Bangalore Tech Par
       sku: skus[i],
       description: `Enterprise-grade ${name} designed for scalability and performance.`,
       unit: pick(["License", "User/Month", "Instance", "GB", "API Calls"]),
-      base_price: randDecimal(5000, 500000),
-      cost_price: randDecimal(1000, 100000),
+      base_price: randDecimal(2500, 42000),
+      cost_price: randDecimal(1200, 22000),
       tax_percent: pick([0, 5, 12, 18]),
       product_type: pick(["ONE_TIME", "SUBSCRIPTION"]),
       is_active: true,
@@ -194,11 +194,11 @@ const warehouseNames = ["Mumbai Central WH","Delhi North WH","Bangalore Tech Par
     // 11. Subscription Plans (5)
     console.log("Seeding subscription plans...");
     await SubscriptionPlan.bulkCreate([
-      { name: "Starter", billing_cycle: "MONTHLY", price: 4999, proration_enabled: true, cancellation_refund_enabled: true },
-      { name: "Growth", billing_cycle: "MONTHLY", price: 14999, proration_enabled: true, cancellation_refund_enabled: true },
-      { name: "Professional", billing_cycle: "QUARTERLY", price: 39999, proration_enabled: true, cancellation_refund_enabled: true },
-      { name: "Enterprise", billing_cycle: "YEARLY", price: 149999, proration_enabled: true, cancellation_refund_enabled: false },
-      { name: "Ultimate", billing_cycle: "YEARLY", price: 499999, proration_enabled: false, cancellation_refund_enabled: false },
+      { name: "Starter", billing_cycle: "MONTHLY", price: 1499, proration_enabled: true, cancellation_refund_enabled: true },
+      { name: "Growth", billing_cycle: "MONTHLY", price: 4999, proration_enabled: true, cancellation_refund_enabled: true },
+      { name: "Professional", billing_cycle: "QUARTERLY", price: 12999, proration_enabled: true, cancellation_refund_enabled: true },
+      { name: "Enterprise", billing_cycle: "YEARLY", price: 49999, proration_enabled: true, cancellation_refund_enabled: false },
+      { name: "Ultimate", billing_cycle: "YEARLY", price: 99999, proration_enabled: false, cancellation_refund_enabled: false },
     ], { ignoreDuplicates: true });
     const subPlans = await SubscriptionPlan.findAll();
     console.log(`  ✅ ${subPlans.length} subscription plans`);
@@ -226,15 +226,15 @@ const warehouseNames = ["Mumbai Central WH","Delhi North WH","Bangalore Tech Par
     await Quotation.bulkCreate(quotationsData, { ignoreDuplicates: true });
     const quotations = await Quotation.findAll();
 
-    // Quotation Items (3-5 per quotation = ~600-1000 items)
+    // Quotation Items (2-4 per quotation = ~500-800 items)
     const qItemsData = [];
     for (const q of quotations) {
-      const itemCount = rand(3, 5);
+      const itemCount = rand(2, 4);
       let subtotal = 0, discountAmt = 0, taxAmt = 0, marginAmt = 0;
       for (let i = 0; i < itemCount; i++) {
         const product = pick(products);
-        const qty = rand(1, 50);
-        const unitPrice = randDecimal(product.base_price * 0.8, product.base_price);
+        const qty = rand(1, 6);
+        const unitPrice = randDecimal(product.base_price * 0.85, product.base_price);
         const discPct = randDecimal(0, 20);
         const discAmt = parseFloat(((unitPrice * qty * discPct) / 100).toFixed(2));
         const lineTotal = parseFloat((unitPrice * qty - discAmt).toFixed(2));
@@ -386,7 +386,7 @@ const warehouseNames = ["Mumbai Central WH","Delhi North WH","Bangalore Tech Par
       quotation_id: q.id,
       invoice_number: `INV-2024-${String(i + 1).padStart(5, "0")}`,
       invoice_type: pick(["ONE_TIME", "RECURRING"]),
-      amount: randDecimal(10000, 5000000),
+      amount: q.total_amount || randDecimal(25000, 150000),
       status: pick(["DRAFT", "ISSUED", "PARTIALLY_PAID", "PAID", "CANCELLED"]),
       due_date: randDate(90),
     }));
@@ -400,13 +400,13 @@ const warehouseNames = ["Mumbai Central WH","Delhi North WH","Bangalore Tech Par
       billingData.push({
         subscription_id: sub.id,
         billing_date: randDate(365),
-        amount: randDecimal(5000, 500000),
+        amount: randDecimal(2500, 24000),
         status: pick(["PENDING", "INVOICED", "PAID", "CANCELLED"]),
       });
       billingData.push({
         subscription_id: sub.id,
         billing_date: randDate(30),
-        amount: randDecimal(5000, 500000),
+        amount: randDecimal(2500, 24000),
         status: pick(["PENDING", "INVOICED", "PAID", "CANCELLED"]),
       });
     }
