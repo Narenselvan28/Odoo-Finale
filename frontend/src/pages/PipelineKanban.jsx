@@ -24,7 +24,7 @@ import {
 const STAGES = [
   { id: "DRAFT", label: "Draft & Scoping", color: "#64748b", icon: Clock },
   { id: "PENDING_APPROVAL", label: "Governance Approval", color: "#f59e0b", icon: ShieldAlert },
-  { id: "UNDER_NEGOTIATION", label: "Portal Negotiation", color: "#6366f1", icon: MessageSquare },
+  { id: "UNDER_NEGOTIATION", label: "Portal Negotiation", color: "#F4510B", icon: MessageSquare },
   { id: "APPROVED", label: "Approved & Sent", color: "#0284c7", icon: CheckCircle2 },
   { id: "CONFIRMED", label: "Confirmed Order", color: "#10b981", icon: PackageCheck },
   { id: "FULFILLMENT", label: "Logistics Dispatch", color: "#0d9488", icon: Truck },
@@ -267,7 +267,7 @@ const PipelineKanban = () => {
                 style={{
                   padding: "0.875rem 1rem",
                   borderBottom: "2px solid " + stage.color,
-                  backgroundColor: "#ffffff",
+                  backgroundColor: "var(--bg-card)",
                   borderRadius: "var(--radius-lg) var(--radius-lg) 0 0",
                 }}
               >
@@ -281,7 +281,7 @@ const PipelineKanban = () => {
                     style={{
                       fontSize: "0.75rem",
                       fontWeight: 700,
-                      backgroundColor: "#f1f5f9",
+                      backgroundColor: "var(--bg-secondary)",
                       padding: "2px 6px",
                       borderRadius: "var(--radius-full)",
                     }}
@@ -328,9 +328,9 @@ const PipelineKanban = () => {
                       <div
                         key={deal.id}
                         style={{
-                          backgroundColor: "#ffffff",
+                          backgroundColor: "var(--bg-card)",
                           borderRadius: "var(--radius-md)",
-                          border: "1px solid var(--color-border-subtle)",
+                          border: "1px solid var(--border)",
                           padding: "0.875rem",
                           boxShadow: "var(--shadow-xs)",
                           transition: "box-shadow var(--transition-fast)",
@@ -371,12 +371,12 @@ const PipelineKanban = () => {
                             fontSize: "0.8125rem",
                             marginBottom: "0.75rem",
                             padding: "0.375rem 0.5rem",
-                            backgroundColor: "#f8fafc",
+                            backgroundColor: "var(--bg-secondary)",
                             borderRadius: "var(--radius-sm)",
                           }}
                         >
                           <span style={{ color: "var(--color-text-muted)", fontSize: "0.75rem" }}>Deal Value:</span>
-                          <strong className="tnum" style={{ color: "#0f172a" }}>
+                          <strong className="tnum" style={{ color: "var(--text-heading)" }}>
                             ${dealAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </strong>
                         </div>
@@ -397,7 +397,7 @@ const PipelineKanban = () => {
                               to={`/portal/${deal.id}`}
                               target="_blank"
                               className="btn btn-ghost btn-sm"
-                              style={{ padding: "2px 6px", fontSize: "0.6875rem", color: "#6366f1" }}
+                              style={{ padding: "2px 6px", fontSize: "0.6875rem", color: "var(--orange)" }}
                               title="Open Customer Live Portal"
                             >
                               <ExternalLink size={12} /> Portal

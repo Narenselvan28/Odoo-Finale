@@ -7,13 +7,17 @@ import {
   FileSpreadsheet,
   Clock,
   ShieldCheck,
-  PlusCircle,
+  Plus,
   ArrowRight,
   AlertTriangle,
   Boxes,
   Users,
   CheckCircle2,
-  Percent
+  Percent,
+  Calculator,
+  Kanban,
+  BarChart3,
+  ExternalLink,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -60,215 +64,200 @@ const Dashboard = () => {
 
   const totalPipeline = quotations.reduce((acc, q) => acc + (Number(q.total_amount) || 0), 0);
   const pendingApprovals = approvals.filter((a) => !a.status || a.status.includes("PENDING")).length;
+  const confirmedCount = quotations.filter((q) => q.status === "CONFIRMED" || q.status === "FULFILLMENT").length;
   const activeAlerts = alerts.filter((a) => a.severity === "HIGH" || a.severity === "CRITICAL").length;
 
   return (
-    <AppLayout pageTitle="DealFlow 360 · Executive CPQ Cockpit">
-      {/* Metric Cards Banner */}
-      <div className="metric-grid">
-        <div className="metric-card">
-          <div className="metric-card-top">
-            <span>Total Commercial Pipeline</span>
-            <TrendingUp size={16} color="var(--color-accent)" />
-          </div>
-          <div className="metric-value tnum">
+    <AppLayout
+      pageTitle="Commercial Command Cockpit"
+      subtitle="Enterprise sales operations, multi-tier pricing guardrails, and real-time deal telemetry."
+    >
+      {/* ===== INSTITUTIONAL STATS ROW (ref ui.txt) ===== */}
+      <div className="stats">
+        <div className="stat-card">
+          <div className="label">Total Pipeline Value</div>
+          <div className="value orange tnum">
             ${totalPipeline.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
-          <div className="metric-sub">
-            <span>Across {quotations.length} total quotations</span>
+        </div>
+
+        <div className="stat-card">
+          <div className="label">Pending Governance</div>
+          <div className="value tnum" style={{ color: pendingApprovals > 0 ? "var(--orange)" : "var(--text-heading)" }}>
+            {pendingApprovals} Deals
           </div>
         </div>
 
-        <div className="metric-card">
-          <div className="metric-card-top">
-            <span>Pending Governance</span>
-            <Clock size={16} color="var(--color-warning)" />
-          </div>
-          <div className="metric-value tnum" style={{ color: "var(--color-warning)" }}>
-            {pendingApprovals}
-          </div>
-          <div className="metric-sub">
-            <span>Requires director exception sign-off</span>
+        <div className="stat-card">
+          <div className="label">Confirmed Revenue</div>
+          <div className="value orange tnum">
+            {confirmedCount} Orders
           </div>
         </div>
 
-        <div className="metric-card">
-          <div className="metric-card-top">
-            <span>Catalog Offerings</span>
-            <Boxes size={16} color="var(--color-info)" />
-          </div>
-          <div className="metric-value tnum">{products.length}</div>
-          <div className="metric-sub">
-            <span>Configurable enterprise SKUs</span>
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-card-top">
-            <span>Active Accounts</span>
-            <Users size={16} color="var(--color-success)" />
-          </div>
-          <div className="metric-value tnum">{customers.length}</div>
-          <div className="metric-sub">
-            <span>Classified across 5 policy tiers</span>
+        <div className="stat-card">
+          <div className="label">Active Catalog SKUs</div>
+          <div className="value tnum">
+            {products.length} Products
           </div>
         </div>
       </div>
 
-      {/* Flagship CPQ Launch Hero Card */}
+      {/* ===== WORKSPACE QUICK NAVIGATION TILES ===== */}
+      <div className="section-header">
+        <div>
+          <h2>Operational Workbenches</h2>
+          <p>Instant access to primary configure-price-quote and fulfillment engines</p>
+        </div>
+        <Link to="/cpq" className="btn btn-primary btn-sm">
+          <Plus size={13} /> Launch CPQ Studio
+        </Link>
+      </div>
+
       <div
-        className="data-card"
         style={{
-          background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)",
-          color: "#ffffff",
-          padding: "1.75rem",
-          marginBottom: "1.5rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1.5rem",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "16px",
+          marginBottom: "28px",
         }}
       >
-        <div style={{ maxWidth: "680px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "3px 8px",
-              backgroundColor: "rgba(255,255,255,0.15)",
-              borderRadius: "4px",
-              fontSize: "0.7rem",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              marginBottom: "0.75rem",
-            }}
-          >
-            <Percent size={12} /> PRISM CPQ Engine v2.4 Active
+        {/* CPQ Studio Tile */}
+        <div className="card" style={{ borderTop: "3px solid var(--orange)", padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+            <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-heading)" }}>
+              Pricing Studio (CPQ)
+            </span>
+            <span className="badge badge-orange">Core Engine</span>
           </div>
-          <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem" }}>
-            Precision Configure, Price & Quote Data Entry Workbench
-          </h2>
-          <p style={{ fontSize: "0.875rem", color: "#c7d2fe", lineHeight: 1.6 }}>
-            Construct high-volume multi-product proposals, apply policy volume discounts, protect gross margins with real-time floor guardrails, and trigger automated multi-level director approval workflows.
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "14px", lineHeight: 1.5 }}>
+            Configure product matrices, test discount ceilings, view live margin lift deltas, and split warehouse stock.
           </p>
+          <Link to="/cpq" className="btn btn-secondary btn-sm w-full" style={{ width: "100%", justifyContent: "center" }}>
+            Open Studio Console →
+          </Link>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <Link
-            to="/cpq"
-            className="btn btn-primary"
-            style={{
-              backgroundColor: "#ffffff",
-              color: "#312e81",
-              border: "none",
-              fontWeight: 700,
-              padding: "0.75rem 1.25rem",
-            }}
-          >
-            <PlusCircle size={18} />
-            <span>Launch Pricing Studio</span>
+        {/* Pipeline Kanban Tile */}
+        <div className="card" style={{ borderTop: "3px solid var(--orange)", padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+            <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-heading)" }}>
+              Pipeline Kanban
+            </span>
+            <span className="badge badge-orange">Lifecycle</span>
+          </div>
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "14px", lineHeight: 1.5 }}>
+            Visualize deals across 6 stages from Draft to Fulfillment, monitor bottlenecks, and advance deals with 1 click.
+          </p>
+          <Link to="/pipeline" className="btn btn-secondary btn-sm w-full" style={{ width: "100%", justifyContent: "center" }}>
+            View Sales Pipeline →
           </Link>
+        </div>
 
-          <Link
-            to="/approvals"
-            className="btn btn-secondary"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.1)",
-              color: "#ffffff",
-              borderColor: "rgba(255,255,255,0.2)",
-              justifyContent: "center",
-            }}
-          >
-            <span>Review Approval Queue ({pendingApprovals})</span>
+        {/* Approvals Desk Tile */}
+        <div className="card" style={{ borderTop: "3px solid var(--orange)", padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+            <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-heading)" }}>
+              Governance Approvals
+            </span>
+            <span className="badge badge-orange">{pendingApprovals} Pending</span>
+          </div>
+          <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "14px", lineHeight: 1.5 }}>
+            Level 1 (Sales Director) and Level 2 (Finance Controller) automated risk scoring and policy escalation desk.
+          </p>
+          <Link to="/approvals" className="btn btn-secondary btn-sm w-full" style={{ width: "100%", justifyContent: "center" }}>
+            Review Approvals Queue →
           </Link>
         </div>
       </div>
 
-      {/* Two Column Grid: Recent Quotations & System Alerts */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem" }}>
-        {/* Recent Quotes */}
-        <div className="data-card">
-          <div className="data-card-header">
-            <span className="data-card-title">Recent Quotations in Lifecycle</span>
-            <Link to="/quotations" className="btn btn-ghost btn-sm" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-              View all <ArrowRight size={14} />
-            </Link>
+      {/* ===== RECENT ACTIVE DEALS TABLE ===== */}
+      <div className="card">
+        <div className="card-header">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <FileSpreadsheet size={16} color="var(--orange)" />
+            <span style={{ fontWeight: 700, fontSize: "14px" }}>Recent Commercial Quotations</span>
           </div>
-
-          <div className="data-table-wrapper">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Quote ID</th>
-                  <th>Customer Account</th>
-                  <th>Total Amount</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr><td colSpan="4" style={{ textAlign: "center", padding: "1.5rem" }}>Loading cockpit...</td></tr>
-                ) : quotations.slice(0, 7).map((q) => (
-                  <tr key={q.id}>
-                    <td className="tnum" style={{ fontWeight: 600, color: "var(--color-accent)" }}>
-                      #{q.id}
-                    </td>
-                    <td style={{ fontWeight: 500 }}>{q.customer_name || `Customer #${q.customer_id}`}</td>
-                    <td className="tnum" style={{ fontWeight: 600 }}>
-                      ${Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
-                    <td>
-                      <span className={`badge ${
-                        q.status === "APPROVED" ? "badge-approved" :
-                        q.status === "CONFIRMED" ? "badge-confirmed" :
-                        q.status === "PENDING_APPROVAL" ? "badge-pending" : "badge-draft"
-                      }`}>
-                        {q.status || "DRAFT"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Link to="/quotations" className="btn btn-ghost btn-sm">
+            View All Quotations →
+          </Link>
         </div>
 
-        {/* Live Risk Alerts */}
-        <div className="data-card">
-          <div className="data-card-header">
-            <span className="data-card-title">Active Telemetry Alerts</span>
-            <Link to="/intelligence" className="btn btn-ghost btn-sm">
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          <div style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {alerts.slice(0, 5).map((a) => (
-              <div
-                key={a.id}
-                style={{
-                  padding: "0.75rem",
-                  borderRadius: "var(--radius-md)",
-                  border: "1px solid var(--color-border-subtle)",
-                  backgroundColor: a.severity === "HIGH" ? "var(--color-danger-bg)" : "var(--color-paper-0)",
-                  borderLeft: a.severity === "HIGH" ? "3px solid var(--color-danger)" : "3px solid var(--color-warning)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                  <span style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", color: a.severity === "HIGH" ? "var(--color-danger)" : "var(--color-warning)" }}>
-                    {a.severity || "ALERT"}
-                  </span>
-                  <span className="tnum" style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>
-                    Quote #{a.quotation_id}
-                  </span>
-                </div>
-                <div style={{ fontSize: "0.8125rem", fontWeight: 500 }}>{a.message}</div>
-              </div>
-            ))}
-          </div>
+        <div className="data-table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Quote ID</th>
+                <th>Customer Account</th>
+                <th>Status</th>
+                <th>Total Value</th>
+                <th>Issue Date</th>
+                <th>Portal Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: "center", padding: "24px" }}>
+                    Loading database records...
+                  </td>
+                </tr>
+              ) : quotations.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: "center", padding: "24px", color: "var(--text-muted)" }}>
+                    No quotations found. Click "New Quote" to create one.
+                  </td>
+                </tr>
+              ) : (
+                quotations.slice(0, 8).map((q) => (
+                  <tr key={q.id}>
+                    <td>
+                      <span className="tnum" style={{ fontWeight: 700, color: "var(--orange)" }}>
+                        #{q.id} · {q.quotation_number?.slice(0, 14) || "QUO"}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>{q.Customer?.name || q.customer_name || `Customer #${q.customer_id}`}</div>
+                      <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                        {q.Customer?.email || "commercial@enterprise.com"}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          q.status === "CONFIRMED"
+                            ? "badge-confirmed"
+                            : q.status === "PENDING_APPROVAL"
+                            ? "badge-pending"
+                            : q.status === "APPROVED"
+                            ? "badge-approved"
+                            : "badge-draft"
+                        }`}
+                      >
+                        {q.status}
+                      </span>
+                    </td>
+                    <td className="tnum" style={{ fontWeight: 700 }}>
+                      ${Number(q.total_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td className="tnum" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                      {q.created_at ? new Date(q.created_at).toLocaleDateString() : "Recent"}
+                    </td>
+                    <td>
+                      <Link
+                        to={`/portal/${q.id}`}
+                        target="_blank"
+                        className="btn btn-ghost btn-xs"
+                        style={{ color: "var(--orange)", display: "inline-flex", gap: "4px", alignItems: "center" }}
+                      >
+                        <ExternalLink size={12} /> Portal
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </AppLayout>

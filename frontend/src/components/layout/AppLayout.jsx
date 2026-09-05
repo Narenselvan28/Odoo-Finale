@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -13,20 +13,30 @@ import {
   Activity,
   ShieldCheck,
   LogOut,
-  PlusCircle,
-  Menu,
-  X,
-  Sparkles,
-  Shield,
+  Plus,
   Kanban,
-  BarChart3
+  BarChart3,
+  User,
 } from "lucide-react";
 
-const AppLayout = ({ children, pageTitle = "Enterprise Studio" }) => {
+const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Dark/Light Mode State synced with localStorage and html data-theme
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("dealflow_theme") || "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("dealflow_theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
 
   const handleLogout = () => {
     logout();
@@ -35,250 +45,198 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio" }) => {
 
   const userRole = user?.role || "sales_rep";
 
-  // Role color palette
-  const getRoleBadgeStyle = (role) => {
+  // Role metadata styling
+  const getRoleBadge = (role) => {
     switch (role) {
       case "admin":
-        return { bg: "#4f46e5", text: "#ffffff", label: "Admin" };
+        return { label: "Superuser Admin" };
       case "sales_manager":
-        return { bg: "#d97706", text: "#ffffff", label: "Sales Director" };
+        return { label: "Sales Director" };
       case "sales_rep":
-        return { bg: "#0284c7", text: "#ffffff", label: "Account Exec" };
+        return { label: "Account Executive" };
       case "finance_manager":
-        return { bg: "#059669", text: "#ffffff", label: "Finance Controller" };
+        return { label: "Finance Controller" };
       case "warehouse_manager":
-        return { bg: "#0d9488", text: "#ffffff", label: "Supply Chain Lead" };
+        return { label: "Supply Chain Lead" };
       default:
-        return { bg: "#64748b", text: "#ffffff", label: role };
+        return { label: role };
     }
   };
 
-  const roleMeta = getRoleBadgeStyle(userRole);
+  const roleMeta = getRoleBadge(userRole);
 
-  const allRoles = ["admin", "sales_manager", "sales_rep", "finance_manager", "warehouse_manager"];
-
-  const allNavSections = [
-    {
-      title: "Core Operations",
-      roles: allRoles,
-      items: [
-        { label: "Dashboard Cockpit", path: "/dashboard", icon: LayoutDashboard },
-        { label: "Pricing Studio (CPQ)", path: "/cpq", icon: Calculator, badge: "Flagship" },
-      ],
-    },
-    {
-      title: "Sales & Governance",
-      roles: allRoles,
-      items: [
-        { label: "Quotations Ledger", path: "/quotations", icon: FileSpreadsheet },
-        { label: "Pipeline Kanban", path: "/pipeline", icon: Kanban, badge: "Live" },
-        {
-          label: "Approvals Queue",
-          path: "/approvals",
-          icon: CheckSquare,
-          badge: userRole === "admin" || userRole === "sales_manager" ? "Director" : userRole === "finance_manager" ? "L2 Finance" : "Review",
-        },
-      ],
-    },
-    {
-      title: "Catalog & Accounts",
-      roles: allRoles,
-      items: [
-        { label: "Products & Rules", path: "/catalog", icon: Boxes },
-        { label: "Customers & Tiers", path: "/customers", icon: Users },
-      ],
-    },
-    {
-      title: "Supply & Logistics",
-      roles: allRoles,
-      items: [
-        { label: "Inventory & Stock", path: "/inventory", icon: Warehouse, badge: userRole === "warehouse_manager" ? "Lead" : null },
-      ],
-    },
-    {
-      title: "Revenue & Billing",
-      roles: allRoles,
-      items: [
-        { label: "Invoices & Subscriptions", path: "/billing", icon: Receipt, badge: userRole === "finance_manager" ? "Lead" : null },
-      ],
-    },
-    {
-      title: "Deal Telemetry & Ops",
-      roles: allRoles,
-      items: [
-        { label: "Deal Intelligence", path: "/intelligence", icon: Activity },
-        { label: "Telemetry & Reports", path: "/reporting", icon: BarChart3, badge: "Analytics" },
-      ],
-    },
-    {
-      title: "System Governance",
-      roles: allRoles,
-      items: [
-        { label: "Admin & Audit", path: "/users", icon: ShieldCheck, badge: userRole === "admin" ? "Superuser" : "Audit" },
-      ],
-    },
+  const navLinks = [
+    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+    { label: "Pricing Studio", path: "/cpq", icon: Calculator },
+    { label: "Quotations", path: "/quotations", icon: FileSpreadsheet },
+    { label: "Pipeline Kanban", path: "/pipeline", icon: Kanban },
+    { label: "Approvals", path: "/approvals", icon: CheckSquare },
+    { label: "Catalog & Rules", path: "/catalog", icon: Boxes },
+    { label: "Customers", path: "/customers", icon: Users },
+    { label: "Inventory & Depots", path: "/inventory", icon: Warehouse },
+    { label: "Invoices & Billing", path: "/billing", icon: Receipt },
+    { label: "Deal Telemetry", path: "/intelligence", icon: Activity },
+    { label: "Reports & Exports", path: "/reporting", icon: BarChart3 },
+    { label: "Admin & Audit", path: "/users", icon: ShieldCheck },
   ];
 
-  // All sections are enabled for all users
-  const visibleSections = allNavSections;
+  // Category determination for breadcrumbs & page header
+  const getSectionCategory = (path) => {
+    if (path.includes("/cpq") || path.includes("/quotations") || path.includes("/pipeline") || path.includes("/approvals")) {
+      return "Sales Operations & CPQ";
+    }
+    if (path.includes("/catalog") || path.includes("/customers")) {
+      return "Commercial Catalog & Accounts";
+    }
+    if (path.includes("/inventory")) {
+      return "Logistics & Supply Chain";
+    }
+    if (path.includes("/billing")) {
+      return "Finance & Contract Revenue";
+    }
+    if (path.includes("/intelligence") || path.includes("/reporting")) {
+      return "Executive Telemetry & Intelligence";
+    }
+    if (path.includes("/users")) {
+      return "System Governance & Audit";
+    }
+    return "Enterprise Command Center";
+  };
+
+  const sectionCategory = getSectionCategory(location.pathname);
 
   return (
-    <div className="app-shell">
-      {/* Sidebar */}
-      <aside className={`app-sidebar ${mobileMenuOpen ? "open" : ""}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-logo-mark">
-            <Sparkles size={18} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span className="sidebar-brand-name">DealFlow 360</span>
-            <span className="sidebar-brand-tag">RBAC · ENTERPRISE</span>
-          </div>
+    <div className="app">
+      {/* ===== INSTITUTIONAL TOP HEADER ===== */}
+      <header className="header">
+        <div>
+          <Link to="/dashboard" className="logo">
+            ✦ <span>DealFlow</span> 360
+          </Link>
+          <span className="logo-sub">Intelligent Sales Operations & CPQ Platform</span>
         </div>
 
-        <nav className="sidebar-nav">
-          {visibleSections.map((section, sIdx) => {
-            const items = section.items.filter((item) => !item.roles || item.roles.includes(userRole));
-            if (items.length === 0) return null;
-
-            return (
-              <div key={sIdx} className="sidebar-section">
-                <div className="sidebar-section-title">{section.title}</div>
-                {items.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`sidebar-link ${isActive ? "active" : ""}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Icon size={16} />
-                      <span style={{ flex: 1 }}>{item.label}</span>
-                      {item.badge && (
-                        <span
-                          style={{
-                            fontSize: "0.625rem",
-                            backgroundColor: isActive ? "#ffffff" : "#334155",
-                            color: isActive ? "#312e81" : "#e2e8f0",
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="user-badge" style={{ flex: 1, minWidth: 0 }}>
-            <div
-              className="user-avatar"
-              style={{
-                backgroundColor: roleMeta.bg,
-                color: roleMeta.text,
-                fontWeight: 700,
-              }}
-            >
-              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
-              <span
-                style={{
-                  fontSize: "0.8125rem",
-                  fontWeight: 600,
-                  color: "#f8fafc",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {user?.name || "Operator"}
-              </span>
-              <span
-                style={{
-                  fontSize: "0.6875rem",
-                  color: "#cbd5e1",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    backgroundColor: roleMeta.bg,
-                  }}
-                />
-                {roleMeta.label}
-              </span>
-            </div>
-          </div>
+        <div className="header-actions">
+          {/* Interactive Sliding Theme Switcher from ref ui.txt */}
           <button
-            onClick={handleLogout}
-            title="Logout"
-            className="btn btn-ghost btn-sm"
-            style={{ color: "#94a3b8", padding: "6px" }}
+            type="button"
+            className="theme-toggle"
+            onClick={toggleTheme}
+            title="Toggle Light / Dark Mode"
           >
-            <LogOut size={16} />
+            <span className="toggle-icon">{theme === "dark" ? "🌙" : "☀️"}</span>
+            <span className="toggle-track">
+              <span className="toggle-thumb" />
+            </span>
+            <span className="toggle-label">{theme === "dark" ? "Dark" : "Light"}</span>
+          </button>
+
+          {/* User Persona Chip */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 10px",
+              background: "var(--bg-secondary)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-sm)",
+              fontSize: "11px",
+              fontWeight: 600,
+            }}
+          >
+            <User size={13} color="var(--orange)" />
+            <span style={{ color: "var(--text)" }}>{user?.name || "User"}</span>
+            <span className="badge badge-orange">{roleMeta.label}</span>
+          </div>
+
+          <Link to="/cpq" className="btn btn-primary btn-sm">
+            <Plus size={13} /> New Quote
+          </Link>
+
+          <button onClick={handleLogout} className="btn btn-secondary btn-sm" title="End Session">
+            <LogOut size={13} /> Log out
           </button>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Area */}
-      <div className="app-main">
-        <header className="app-topbar">
-          <div className="topbar-left">
-            <button
-              className="btn btn-ghost btn-sm mobile-menu-toggle"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{ display: "none" }}
+      {/* ===== SIGNATURE ORANGE NAVIGATION BAR (ref ui.txt) ===== */}
+      <nav className="nav-bar">
+        {navLinks.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={isActive ? "active" : ""}
             >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-            <h1 className="topbar-title">{pageTitle}</h1>
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* ===== BREADCRUMB ===== */}
+      <div className="breadcrumb">
+        <Link to="/dashboard">Home</Link>
+        <span className="sep">/</span>
+        <span>{sectionCategory}</span>
+        <span className="sep">/</span>
+        <span className="current">{pageTitle}</span>
+      </div>
+
+      {/* ===== PAGE HEADER ===== */}
+      <div className="page-header">
+        <div className="label">{sectionCategory}</div>
+        <h1>{pageTitle}</h1>
+        <div className="accent-line"></div>
+        {subtitle && <p>{subtitle}</p>}
+      </div>
+
+      {/* ===== MAIN PAGE WORKSPACE ===== */}
+      <main style={{ minHeight: "520px", flex: 1, paddingBottom: "24px" }}>
+        {children}
+      </main>
+
+      {/* ===== INSTITUTIONAL FOOTER (ref ui.txt) ===== */}
+      <footer className="footer">
+        <div>
+          <div className="brand">
+            ✦ <span>DealFlow</span> 360
           </div>
+          <div className="sub">Intelligent, Self-Governing Sales Operations</div>
+        </div>
+        <div>
+          <h6>Commercial Engines</h6>
+          <ul>
+            <li><Link to="/cpq">Configure, Price, Quote (CPQ)</Link></li>
+            <li><Link to="/pipeline">Pipeline Kanban Board</Link></li>
+            <li><Link to="/approvals">Governance & Risk Routing</Link></li>
+            <li><Link to="/billing">Dual Capex / Opex Billing</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h6>Supply & Accounts</h6>
+          <ul>
+            <li><Link to="/inventory">Multi-Warehouse Inventory</Link></li>
+            <li><Link to="/catalog">Product Bundles & Rules</Link></li>
+            <li><Link to="/customers">Customer Account Tiers</Link></li>
+            <li><Link to="/reporting">Executive Telemetry Desk</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h6>Governance & Control</h6>
+          <ul>
+            <li><Link to="/intelligence">Deal Health & Anomaly Radar</Link></li>
+            <li><Link to="/users">Audit Trail Logs</Link></li>
+            <li><span style={{ color: "var(--orange)" }}>Security: RBAC Strict Active</span></li>
+            <li><span style={{ color: "var(--color-success)" }}>Database: MySQL Connected</span></li>
+          </ul>
+        </div>
+      </footer>
 
-          <div className="topbar-right">
-            <div
-              style={{
-                fontSize: "0.75rem",
-                padding: "3px 8px",
-                borderRadius: "4px",
-                backgroundColor: "var(--color-paper-2)",
-                border: "1px solid var(--color-border-subtle)",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
-            >
-              <Shield size={13} color={roleMeta.bg} />
-              <span style={{ color: "var(--color-text-secondary)" }}>Role:</span>
-              <strong style={{ color: "var(--color-text-primary)" }}>{roleMeta.label}</strong>
-            </div>
-
-            {(userRole === "admin" || userRole === "sales_manager" || userRole === "sales_rep") && (
-              <Link to="/cpq" className="btn btn-primary btn-sm">
-                <PlusCircle size={15} />
-                <span>Configure New Quote</span>
-              </Link>
-            )}
-          </div>
-        </header>
-
-        <main className="app-content">{children}</main>
+      <div className="footer-bottom">
+        © 2026 <span>DealFlow 360</span> · Institutional Sales Operations Platform · All rights reserved
       </div>
     </div>
   );

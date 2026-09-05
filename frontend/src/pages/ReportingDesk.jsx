@@ -290,7 +290,7 @@ const ReportingDesk = () => {
 
         <div className="metric-card">
           <div className="metric-label">Average Discount Concession</div>
-          <div className="metric-value tnum" style={{ color: "#d97706" }}>
+          <div className="metric-value tnum" style={{ color: "var(--orange)" }}>
             {metrics.avgDiscountPercent.toFixed(1)}%
           </div>
           <div className="metric-delta">
@@ -350,7 +350,7 @@ const ReportingDesk = () => {
                     <div
                       style={{
                         height: "10px",
-                        backgroundColor: "#f1f5f9",
+                        backgroundColor: "var(--bg-secondary)",
                         borderRadius: "var(--radius-full)",
                         overflow: "hidden",
                         display: "flex",
@@ -360,7 +360,7 @@ const ReportingDesk = () => {
                       <div
                         style={{
                           width: `${(cat.actual / 25) * 100}%`,
-                          backgroundColor: cat.actual > cat.ceiling ? "var(--color-danger)" : "var(--color-accent)",
+                          backgroundColor: cat.actual > cat.ceiling ? "var(--color-danger)" : "var(--orange)",
                           height: "100%",
                           borderRadius: "var(--radius-full)",
                           transition: "width 0.4s ease",
@@ -374,7 +374,7 @@ const ReportingDesk = () => {
                           top: 0,
                           bottom: 0,
                           width: "2px",
-                          backgroundColor: "#0f172a",
+                          backgroundColor: "var(--text-heading)",
                         }}
                         title={`Policy Ceiling: ${cat.ceiling}%`}
                       />

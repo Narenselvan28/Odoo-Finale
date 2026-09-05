@@ -92,7 +92,7 @@ const QuotationsList = () => {
       case "PENDING_APPROVAL":
         return <span className="badge badge-pending"><Clock size={12} /> Pending Approval</span>;
       case "UNDER_NEGOTIATION":
-        return <span className="badge badge-enterprise" style={{ background: "#6366f1", color: "#fff" }}><MessageSquare size={12} /> Under Negotiation</span>;
+        return <span className="badge badge-orange"><MessageSquare size={12} /> Under Negotiation</span>;
       case "CONFIRMED":
         return <span className="badge badge-confirmed"><PackageCheck size={12} /> Confirmed</span>;
       case "REJECTED":
@@ -258,7 +258,7 @@ const QuotationsList = () => {
                           target="_blank"
                           className="btn btn-ghost btn-sm"
                           title="Open Customer Live Negotiation Portal"
-                          style={{ color: "#6366f1", padding: "4px" }}
+                          style={{ color: "var(--orange)", padding: "4px" }}
                         >
                           <MessageSquare size={14} />
                         </Link>

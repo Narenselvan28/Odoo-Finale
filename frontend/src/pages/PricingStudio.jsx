@@ -537,10 +537,11 @@ const PricingStudio = () => {
     <AppLayout pageTitle="Pricing Studio · CPQ Data Entry Workbench">
       {/* Top Banner with Quote Identification & Governance State */}
       <div
-        className="data-card"
+        className="card"
         style={{
           marginBottom: "1.25rem",
-          background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
+          backgroundColor: "var(--bg-card)",
+          border: "1px solid var(--border)",
         }}
       >
         <div
@@ -817,28 +818,29 @@ const PricingStudio = () => {
           {/* B5: Live Upsell & Cross-Sell Suggestions Panel */}
           {activeRecommendations.length > 0 && (
             <div
-              className="data-card"
+              className="card"
               style={{
                 marginTop: "1rem",
-                border: "1px solid #c7d2fe",
-                background: "linear-gradient(180deg, #f5f3ff 0%, #ffffff 100%)",
+                border: "1px solid var(--border)",
+                borderTop: "3px solid var(--orange)",
+                backgroundColor: "var(--bg-card)",
               }}
             >
               <div
                 style={{
                   padding: "1rem 1.25rem",
-                  borderBottom: "1px solid #e0e7ff",
+                  borderBottom: "1px solid var(--border-light)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <Sparkles size={18} color="#6366f1" />
-                  <span style={{ fontWeight: 600, color: "#312e81" }}>
+                  <Sparkles size={18} color="var(--orange)" />
+                  <span style={{ fontWeight: 600, color: "var(--text-heading)" }}>
                     Intelligent Upsell & Cross-Sell Engine (Spec B5)
                   </span>
-                  <span className="badge badge-enterprise" style={{ background: "#4f46e5", color: "#fff" }}>
+                  <span className="badge badge-orange">
                     AI Recommendations
                   </span>
                 </div>
@@ -870,8 +872,8 @@ const PricingStudio = () => {
                     <div
                       key={rec.id}
                       style={{
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #e2e8f0",
+                        backgroundColor: "var(--bg-card)",
+                        border: "1px solid var(--border)",
                         borderRadius: "var(--radius-md)",
                         padding: "1rem",
                         display: "flex",
@@ -915,7 +917,7 @@ const PricingStudio = () => {
                             fontSize: "0.75rem",
                             marginBottom: "0.75rem",
                             padding: "0.5rem",
-                            backgroundColor: "#f8fafc",
+                            backgroundColor: "var(--bg-secondary)",
                             borderRadius: "var(--radius-sm)",
                           }}
                         >
@@ -1092,7 +1094,7 @@ const PricingStudio = () => {
 
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Total Contract Value (TCV)</div>
-                  <div className="tnum" style={{ fontSize: "1.125rem", fontWeight: 700, color: "#4f46e5" }}>
+                  <div className="tnum" style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--orange)" }}>
                     ${totalContractValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--color-text-muted)" }}>
@@ -1427,8 +1429,8 @@ const PricingStudio = () => {
                       style={{
                         padding: "0.75rem",
                         borderRadius: "var(--radius-md)",
-                        border: "1px solid var(--color-border-subtle)",
-                        backgroundColor: "#ffffff",
+                        border: "1px solid var(--border)",
+                        backgroundColor: "var(--bg-card)",
                       }}
                     >
                       <div
@@ -1462,13 +1464,13 @@ const PricingStudio = () => {
                               alignItems: "center",
                               fontSize: "0.75rem",
                               padding: "0.375rem 0.5rem",
-                              backgroundColor: dist.isBackorder ? "#fff1f2" : "#f8fafc",
+                              backgroundColor: dist.isBackorder ? "var(--color-danger-bg)" : "var(--bg-secondary)",
                               borderRadius: "var(--radius-sm)",
-                              border: dist.isBackorder ? "1px solid #fecdd3" : "none",
+                              border: dist.isBackorder ? "1px solid var(--color-danger-border)" : "1px solid var(--border-light)",
                             }}
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                              <Truck size={13} color={dist.isBackorder ? "#e11d48" : "#475569"} />
+                              <Truck size={13} color={dist.isBackorder ? "var(--color-danger)" : "var(--text-muted)"} />
                               <span>
                                 {dist.warehouse.name} ({dist.warehouse.location || "Regional"})
                               </span>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Sparkles, ArrowRight, ShieldCheck, UserCheck, Shield } from "lucide-react";
@@ -10,11 +10,18 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Theme support on login screen
+  const [theme, setTheme] = useState(() => localStorage.getItem("dealflow_theme") || "light");
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("dealflow_theme", theme);
+  }, [theme]);
+
   const personas = [
-    { label: "Admin", email: "admin@dealflow360.com", role: "Superuser", color: "#4f46e5" },
-    { label: "Sales Director", email: "sales.manager@dealflow360.com", role: "Approver", color: "#d97706" },
-    { label: "Account Exec", email: "sales.rep@dealflow360.com", role: "Quoter", color: "#0284c7" },
-    { label: "Finance", email: "finance@dealflow360.com", role: "Invoicing", color: "#059669" },
+    { label: "Admin", email: "admin@dealflow360.com", role: "Superuser", color: "var(--orange)" },
+    { label: "Sales Dir", email: "sales.manager@dealflow360.com", role: "L1 Director", color: "#d97706" },
+    { label: "Account Exec", email: "sales.rep@dealflow360.com", role: "CPQ Quoter", color: "#0284c7" },
+    { label: "Finance Lead", email: "finance@dealflow360.com", role: "L2 Finance", color: "#059669" },
     { label: "Supply Chain", email: "warehouse@dealflow360.com", role: "Logistics", color: "#0d9488" },
   ];
 
@@ -44,40 +51,64 @@ const Login = () => {
     <div
       style={{
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "var(--color-paper-0)",
+        backgroundColor: "var(--bg)",
         padding: "1.5rem",
+        transition: "background 0.3s ease",
       }}
     >
+      {/* Top Header Controls */}
+      <div style={{ position: "absolute", top: "20px", right: "24px" }}>
+        <button
+          type="button"
+          className="theme-toggle"
+          onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
+        >
+          <span className="toggle-icon">{theme === "dark" ? "🌙" : "☀️"}</span>
+          <span className="toggle-track">
+            <span className="toggle-thumb" />
+          </span>
+          <span className="toggle-label">{theme === "dark" ? "Dark" : "Light"}</span>
+        </button>
+      </div>
+
       <div
-        className="data-card"
+        className="card"
         style={{
           width: "100%",
           maxWidth: "460px",
           padding: "2rem",
-          boxShadow: "var(--shadow-lg)",
+          borderTop: "3px solid var(--orange)",
+          boxShadow: "var(--shadow-md)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem" }}>
-          <div className="sidebar-logo-mark">
-            <Sparkles size={18} />
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          <div className="logo" style={{ fontSize: "24px", justifyContent: "center" }}>
+            ✦ <span>DealFlow</span> 360
           </div>
-          <div>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, fontFamily: "var(--font-display)" }}>DealFlow 360</h2>
-            <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", textTransform: "uppercase" }}>
-              Enterprise CPQ & RBAC Security Suite
-            </div>
+          <div className="logo-sub" style={{ marginTop: "4px" }}>
+            Smart Sales Operations & CPQ Platform
           </div>
         </div>
 
         {/* Quick Persona Switcher */}
         <div style={{ marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-text-secondary)", marginBottom: "0.5rem" }}>
-            Select Test Persona Role:
+          <div
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              color: "var(--text-secondary)",
+              marginBottom: "0.5rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}
+          >
+            Select Persona to Sign In:
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))", gap: "0.35rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.35rem" }}>
             {personas.map((p) => {
               const isSelected = form.email === p.email;
               return (
@@ -86,21 +117,33 @@ const Login = () => {
                   type="button"
                   onClick={() => handleSelectPersona(p.email)}
                   style={{
-                    padding: "0.4rem 0.25rem",
-                    border: `1px solid ${isSelected ? p.color : "var(--color-border-subtle)"}`,
-                    backgroundColor: isSelected ? "var(--color-paper-0)" : "var(--color-paper-1)",
-                    borderRadius: "var(--radius-md)",
+                    padding: "0.5rem 0.25rem",
+                    border: `1px solid ${isSelected ? "var(--orange)" : "var(--border-strong)"}`,
+                    backgroundColor: isSelected ? "var(--orange-pale)" : "var(--bg-card)",
+                    borderRadius: "var(--radius-sm)",
                     cursor: "pointer",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    transition: "all 150ms ease",
+                    transition: "all var(--fast)",
                   }}
                 >
-                  <span style={{ fontSize: "0.75rem", fontWeight: 600, color: isSelected ? p.color : "var(--color-text-primary)" }}>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      color: isSelected ? "var(--orange)" : "var(--text)",
+                    }}
+                  >
                     {p.label}
                   </span>
-                  <span style={{ fontSize: "0.625rem", color: "var(--color-text-muted)" }}>
+                  <span
+                    style={{
+                      fontSize: "0.625rem",
+                      color: isSelected ? "var(--orange)" : "var(--text-muted)",
+                      marginTop: "2px",
+                    }}
+                  >
                     {p.role}
                   </span>
                 </button>
@@ -112,73 +155,72 @@ const Login = () => {
         {error && (
           <div
             style={{
-              padding: "0.625rem 0.875rem",
               backgroundColor: "var(--color-danger-bg)",
-              color: "var(--color-danger)",
               border: "1px solid var(--color-danger-border)",
-              borderRadius: "var(--radius-md)",
-              fontSize: "0.8125rem",
+              color: "var(--color-danger)",
+              padding: "0.75rem 1rem",
+              borderRadius: "var(--radius-sm)",
               marginBottom: "1rem",
+              fontSize: "0.8125rem",
+              fontWeight: 500,
             }}
           >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div>
-            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, marginBottom: "0.35rem" }}>
-              Work Email Address
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">
+              Enterprise Email <span className="req">*</span>
             </label>
             <input
               type="email"
               name="email"
-              className="input"
+              required
+              className="form-input"
               value={form.email}
               onChange={handleChange}
-              required
+              placeholder="user@dealflow360.com"
             />
           </div>
 
-          <div>
-            <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, marginBottom: "0.35rem" }}>
-              Security Password
+          <div className="form-group" style={{ marginBottom: "1.5rem" }}>
+            <label className="form-label">
+              Security Password <span className="req">*</span>
             </label>
             <input
               type="password"
               name="password"
-              className="input"
+              required
+              className="form-input"
               value={form.password}
               onChange={handleChange}
-              required
+              placeholder="••••••••"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-primary"
-            style={{ width: "100%", padding: "0.625rem", marginTop: "0.5rem" }}
+            className="btn btn-primary w-full"
+            style={{ width: "100%", padding: "10px", fontSize: "0.875rem" }}
           >
-            {loading ? "Authenticating Session..." : "Sign In with Role Permissions"}
-            <ArrowRight size={15} />
+            {loading ? "Authenticating Session..." : "Sign In to Platform →"}
           </button>
         </form>
 
         <div
           style={{
             marginTop: "1.25rem",
-            padding: "0.75rem",
-            backgroundColor: "var(--color-paper-2)",
-            borderRadius: "var(--radius-md)",
+            paddingTop: "1rem",
+            borderTop: "1px solid var(--border-light)",
+            textAlign: "center",
             fontSize: "0.75rem",
-            color: "var(--color-text-secondary)",
+            color: "var(--text-muted)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "4px", fontWeight: 600, marginBottom: "2px" }}>
-            <ShieldCheck size={14} color="var(--color-accent)" /> Unified Password for All Personas:
-          </div>
-          <code>password123</code>
+          Password for all personas: <strong style={{ color: "var(--orange)" }}>password123</strong>
         </div>
       </div>
     </div>

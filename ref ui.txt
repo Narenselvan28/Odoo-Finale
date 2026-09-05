@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AssessIQ · Assessment Portal</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+    
+    <style>
+        /* ============================================================
+               ASSESSIQ — FULL WIDTH INSTITUTIONAL UI
+               ============================================================
+               Color Palette:
+               - Orange (#F4510B) → Brand/Accent
+               - White (#FFFFFF) → Primary background
+               - Charcoal (#202020) → Text
+               - Light Gray (#F7F7F7) → Secondary bg
+               ============================================================ */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* ===== LIGHT MODE ===== */
+        :root {
+            --orange: #F4510B;
+            --orange-dark: #D94108;
+            --orange-light: #FF5A00;
+            --orange-pale: #FFF0E8;
+            --orange-glow: rgba(244, 81, 11, 0.12);
+            
+            --bg: #FFFFFF;
+            --bg-secondary: #F7F7F7;
+            --bg-elevated: #FAFAFA;
+            --bg-card: #FFFFFF;
+            --bg-input: #FFFFFF;
+            --bg-hover: #FFF5F0;
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            
+            --text: #202020;
+            --text-heading: #111111;
+            --text-secondary: #555555;
+            --text-muted: #777777;
+            --text-inverse: #FFFFFF;
+            
+            --border: #DDDDDD;
+            --border-light: #EEEEEE;
+            --border-strong: #CCCCCC;
+            --border-focus: #F4510B;
+            
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.03);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.06);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.08);
+            
+            --radius-sm: 2px;
+            --radius-md: 4px;
+            --radius-lg: 6px;
+            --radius-xl: 8px;
+            --radius-full: 9999px;
+            
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --fast: 0.2s var(--ease);
+            --med: 0.35s var(--ease);
+            --slow: 0.5s var(--ease);
+        }
+        
+        /* ===== DARK MODE ===== */
+        [data-theme="dark"] {
+            --bg: #121212;
+            --bg-secondary: #181818;
+            --bg-elevated: #1E1E1E;
+            --bg-card: #1E1E1E;
+            --bg-input: #181818;
+            --bg-hover: #282828;
+            --bg-glass: rgba(18, 18, 18, 0.7);
+            
+            --text: #F5F5F5;
+            --text-heading: #FFFFFF;
+            --text-secondary: #C7C7C7;
+            --text-muted: #969696;
+            
+            --border: #353535;
+            --border-light: #2A2A2A;
+            --border-strong: #444444;
+            
+            --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.6);
+            
+            --orange-pale: rgba(244, 81, 11, 0.12);
+            --orange-glow: rgba(244, 81, 11, 0.2);
+        }
+        
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 0;
+            transition: background 0.4s var(--ease), color 0.4s var(--ease);
+        }
+        
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: var(--radius-sm); }
+        
+        /* ===== FULL WIDTH CONTAINER ===== */
+        .app {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+        
+        /* ============================================================
+               THEME TOGGLE
+               ============================================================ */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 4px 4px 12px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border);
+            background: var(--bg-glass);
+            backdrop-filter: blur(8px);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--med);
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: var(--shadow-xs);
+        }
+        .theme-toggle:hover {
+            border-color: var(--orange);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-1px);
+        }
+        .theme-toggle .toggle-track {
+            width: 36px;
+            height: 20px;
+            border-radius: var(--radius-full);
+            background: var(--bg-secondary);
+            position: relative;
+            transition: all var(--med);
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .theme-toggle .toggle-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: var(--radius-full);
+            background: var(--orange);
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all var(--med);
+            box-shadow: 0 2px 8px var(--orange-glow);
+        }
+        [data-theme="dark"] .theme-toggle .toggle-thumb {
+            left: 18px;
+            background: var(--orange-light);
+        }
+        .theme-toggle .toggle-icon { font-size: 13px; }
+        .theme-toggle .toggle-label { font-weight: 500; }
+        
+        /* ============================================================
+               HEADER
+               ============================================================ */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 0 14px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-heading);
+        }
+        .logo span { color: var(--orange); }
+        .logo-sub {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            display: block;
+            text-transform: uppercase;
+            margin-top: -2px;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* ============================================================
+               NAVIGATION — ORANGE BAR
+               ============================================================ */
+        .nav-bar {
+            background: var(--orange);
+            border-radius: var(--radius-sm);
+            margin: 16px 0 24px;
+            padding: 0 20px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            box-shadow: 0 2px 12px var(--orange-glow);
+        }
+        .nav-bar a {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            padding: 6px 18px;
+            border-radius: var(--radius-sm);
+            transition: all var(--fast);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            position: relative;
+        }
+        .nav-bar a::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #FFFFFF;
+            transition: all var(--med);
+            transform: translateX(-50%);
+        }
+        .nav-bar a:hover::after,
+        .nav-bar a.active::after {
+            width: 60%;
+        }
+        .nav-bar a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
+        }
+        .nav-bar a.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #FFFFFF;
+        }
+        .nav-bar::-webkit-scrollbar { height: 0; }
+        
+        /* ============================================================
+               BREADCRUMB
+               ============================================================ */
+        .breadcrumb {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 4px 0 16px;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .breadcrumb .sep { color: var(--border-strong); }
+        .breadcrumb span { color: var(--orange); font-weight: 600; }
+        
+        /* ============================================================
+               BUTTONS
+               ============================================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 20px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 13px;
+            font-family: var(--font);
+            border: none;
+            cursor: pointer;
+            transition: all var(--fast);
+            background: transparent;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .btn:active { transform: scale(0.97); }
+        
+        .btn-primary {
+            background: var(--orange);
+            color: var(--text-inverse);
+            box-shadow: 0 2px 8px var(--orange-glow);
+        }
+        .btn-primary:hover {
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px var(--orange-glow);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-strong);
+        }
+        .btn-secondary:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+            background: var(--orange-pale);
+            transform: translateY(-1px);
+        }
+        
+        .btn-ghost {
+            color: var(--text-muted);
+        }
+        .btn-ghost:hover {
+            color: var(--orange);
+            background: var(--orange-pale);
+        }
+        
+        .btn-sm { padding: 6px 14px; font-size: 11px; }
+        .btn-xs { padding: 4px 10px; font-size: 10px; }
+        
+        /* ============================================================
+               CARDS
+               ============================================================ */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-xs);
+            transition: all var(--med);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
+        }
+        .card-body { padding: 24px 28px; }
+        .card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        /* ============================================================
+               PAGE HEADER
+               ============================================================ */
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header .label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .page-header .label::before {
+            content: '';
+            width: 16px;
+            height: 2px;
+            background: var(--orange);
+        }
+        .page-header h1 {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin: 2px 0 6px;
+            letter-spacing: -0.3px;
+        }
+        .page-header .accent-line {
+            width: 40px;
+            height: 3px;
+            background: var(--orange);
+            margin-top: 4px;
+            border-radius: var(--radius-full);
+        }
+        .page-header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+        
+        /* ============================================================
+               FORM ELEMENTS
+               ============================================================ */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        .form-label .req { color: var(--orange); margin-left: 2px; }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 9px 14px;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--bg-input);
+            color: var(--text);
+            transition: all var(--fast);
+            outline: none;
+            font-family: var(--font);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 2px var(--orange-pale);
+        }
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: var(--text-muted);
+        }
+        .form-textarea { resize: vertical; min-height: 60px; }
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23777777' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            cursor: pointer;
+        }
+        [data-theme="dark"] .form-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23969696' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+        }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        
+        /* ============================================================
+               BADGE
+               ============================================================ */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .badge-orange { background: var(--orange-pale); color: var(--orange); }
+        .badge-muted { background: var(--bg-secondary); color: var(--text-muted); }
+        .badge-dark { background: var(--text-heading); color: var(--text-inverse); }
+        [data-theme="dark"] .badge-dark { background: var(--bg-elevated); color: var(--text); }
+        
+        /* ============================================================
+               STATS
+               ============================================================ */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-xs);
+            transition: all var(--med);
+            border-left: 3px solid var(--orange);
+        }
+        .stat-card:hover {
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
+        }
+        .stat-card .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .stat-card .value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 2px;
+            color: var(--text-heading);
+        }
+        .stat-card .value.orange { color: var(--orange); }
+        
+        /* ============================================================
+               ASSESSMENT GRID
+               ============================================================ */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .assessment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        
+        .assessment-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-xs);
+            transition: all var(--med);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 3px solid var(--orange);
+        }
+        .assessment-card:hover {
+            box-shadow: var(--shadow-sm);
+            border-color: var(--border-strong);
+            transform: translateY(-3px);
+        }
+        .assessment-card .top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .assessment-card .title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+        .assessment-card .meta {
+            display: flex;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .assessment-card .meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .assessment-card .difficulty {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .assessment-card .progress {
+            margin-bottom: 14px;
+        }
+        .assessment-card .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .assessment-card .progress-bar .fill {
+            height: 100%;
+            border-radius: var(--radius-sm);
+            background: var(--orange);
+            transition: width 0.8s var(--ease-spring);
+        }
+        .assessment-card .progress-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        /* ============================================================
+               ARENA (MCQ Assessment)
+               ============================================================ */
+        .arena {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-xs);
+        }
+        .arena-header {
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--orange);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .arena-header .info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .arena-header .info .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: var(--radius-full);
+            background: var(--orange);
+            display: inline-block;
+        }
+        .arena-header .timer {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-heading);
+            letter-spacing: 0.02em;
+        }
+        .arena-header .timer.warning { color: var(--orange); }
+        
+        .arena-body {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            min-height: 380px;
+        }
+        .arena-question {
+            padding: 24px 28px;
+            border-right: 1px solid var(--border-light);
+        }
+        .arena-question .q-number {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--orange);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .arena-question .q-text {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.6;
+            color: var(--text-heading);
+            margin-bottom: 16px;
+        }
+        .arena-question .q-example {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            border: 1px solid var(--border-light);
+        }
+        .arena-question .q-constraint {
+            background: var(--orange-pale);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--orange);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .arena-answers {
+            padding: 24px 28px;
+            background: var(--bg-secondary);
+        }
+        .arena-answers h4 {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all var(--fast);
+            box-shadow: var(--shadow-xs);
+        }
+        .option:hover {
+            border-color: var(--orange);
+            background: var(--orange-pale);
+            transform: translateX(3px);
+        }
+        .option.selected {
+            border-color: var(--orange);
+            background: var(--orange-pale);
+            box-shadow: 0 0 0 1px var(--orange);
+        }
+        .option .letter {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+            flex-shrink: 0;
+            border: 1px solid var(--border-strong);
+            color: var(--text-secondary);
+            transition: all var(--fast);
+        }
+        .option.selected .letter {
+            background: var(--orange);
+            color: var(--text-inverse);
+            border-color: var(--orange);
+        }
+        .option .text {
+            font-size: 14px;
+            color: var(--text);
+        }
+        
+        .arena-nav {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: var(--bg-secondary);
+        }
+        .arena-nav .palette {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .arena-nav .palette button {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--fast);
+        }
+        .arena-nav .palette button:hover {
+            border-color: var(--orange);
+            transform: scale(1.05);
+        }
+        .arena-nav .palette button.active {
+            border-color: var(--orange);
+            background: var(--orange);
+            color: var(--text-inverse);
+        }
+        .arena-nav .palette button.answered {
+            border-color: var(--orange);
+            background: var(--orange-pale);
+            color: var(--orange);
+        }
+        
+        /* ============================================================
+               MODAL
+               ============================================================ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s var(--ease);
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            max-width: 460px;
+            width: 100%;
+            padding: 28px 32px;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.35s var(--ease-spring);
+        }
+        .modal-overlay.open .modal {
+            transform: scale(1) translateY(0);
+        }
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .modal-header .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: var(--orange-pale);
+            color: var(--orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+        .modal-body {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-actions .btn { flex: 1; }
+        
+        /* ============================================================
+               FOOTER
+               ============================================================ */
+        .footer {
+            margin-top: 36px;
+            padding: 28px 32px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 28px;
+        }
+        .footer .brand {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+        .footer .brand span { color: var(--orange); }
+        .footer .sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .footer h6 {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .footer ul {
+            list-style: none;
+            font-size: 13px;
+            line-height: 2;
+            color: var(--text-secondary);
+        }
+        .footer ul li {
+            cursor: pointer;
+            transition: all var(--fast);
+        }
+        .footer ul li:hover {
+            color: var(--orange);
+            transform: translateX(3px);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding: 16px 0 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-light);
+            margin-top: 8px;
+        }
+        .footer-bottom span { color: var(--orange); font-weight: 600; }
+        
+        /* ============================================================
+               RESPONSIVE
+               ============================================================ */
+        @media (max-width: 1024px) {
+            .app { padding: 0 20px; }
+        }
+        @media (max-width: 768px) {
+            .app { padding: 0 16px; }
+            .page-header h1 { font-size: 24px; }
+            .arena-body { grid-template-columns: 1fr; }
+            .arena-question { border-right: none; border-bottom: 1px solid var(--border-light); }
+            .arena-question, .arena-answers { padding: 18px; }
+            .card-body { padding: 18px; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            .assessment-grid { grid-template-columns: 1fr; }
+            .footer { padding: 20px; grid-template-columns: 1fr 1fr; }
+            .nav-bar { height: 38px; padding: 0 12px; gap: 2px; }
+            .nav-bar a { font-size: 10px; padding: 4px 12px; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .stats { grid-template-columns: 1fr; }
+            .modal { padding: 20px; }
+            .header .logo { font-size: 20px; }
+            .header .logo-sub { display: none; }
+            .footer { grid-template-columns: 1fr; }
+            .arena-nav .palette button { width: 26px; height: 26px; font-size: 10px; }
+        }
+        
+        .text-muted { color: var(--text-muted); }
+        .text-sm { font-size: 13px; }
+        .text-xs { font-size: 11px; }
+        .mt-2 { margin-top: 8px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mb-3 { margin-bottom: 12px; }
+        .mb-4 { margin-bottom: 16px; }
+        .w-full { width: 100%; }
+        .flex { display: flex; }
+        .flex-center { align-items: center; justify-content: center; }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div>
+            <div class="logo">✦ <span>Assess</span>IQ</div>
+            <div class="logo-sub">Smart Assessment Platform</div>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" id="themeToggle">
+                <span class="toggle-icon" id="themeIcon">☀️</span>
+                <span class="toggle-track">
+                    <span class="toggle-thumb"></span>
+                </span>
+                <span class="toggle-label" id="themeLabel">Light</span>
+            </button>
+            <button class="btn btn-ghost btn-sm">← Dashboard</button>
+            <button class="btn btn-secondary btn-sm">Log in</button>
+            <button class="btn btn-primary btn-sm">Get Started</button>
+        </div>
+    </header>
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav class="nav-bar">
+        <a href="#" class="active">Home</a>
+        <a href="#">Assessments</a>
+        <a href="#">Question Bank</a>
+        <a href="#">Performance</a>
+        <a href="#">Results</a>
+        <a href="#">Profile</a>
+    </nav>
+
+    <!-- ===== BREADCRUMB ===== -->
+    <div class="breadcrumb">
+        Home <span class="sep">/</span> Assessments <span class="sep">/</span> <span>Weekly Aptitude Test</span>
+    </div>
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="page-header">
+        <div class="label">Assessments</div>
+        <h1>Assessments</h1>
+        <div class="accent-line"></div>
+        <p>Upcoming and completed assessments for your department</p>
+    </div>
+
+    <!-- ===== STATS ===== -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="label">Completed</div>
+            <div class="value">12</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Accuracy</div>
+            <div class="value orange">78%</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Streak</div>
+            <div class="value">6</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Pending</div>
+            <div class="value orange">4</div>
+        </div>
+    </div>
+
+    <!-- ===== ASSESSMENTS ===== -->
+    <div class="section-header">
+        <div>
+            <h2>Weekly Assessments</h2>
+            <p>Test your knowledge and build consistency</p>
+        </div>
+        <button class="btn btn-ghost btn-sm">View all →</button>
+    </div>
+
+    <div class="assessment-grid">
+        <!-- Card 1 -->
+        <div class="assessment-card">
+            <div>
+                <div class="top">
+                    <span class="title">Aptitude #12</span>
+                    <span class="badge badge-orange">Available</span>
+                </div>
+                <div class="meta">
+                    <span>📝 25 questions</span>
+                    <span>⏱ 30 min</span>
+                </div>
+                <div class="difficulty">Medium</div>
+                <div class="progress">
+                    <div class="progress-bar"><div class="fill" style="width: 0%;"></div></div>
+                    <div class="progress-label">Not started</div>
+                </div>
+            </div>
+            <button class="btn btn-primary w-full">Start Assessment</button>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="assessment-card">
+            <div>
+                <div class="top">
+                    <span class="title">Reasoning #04</span>
+                    <span class="badge badge-orange">In Progress</span>
+                </div>
+                <div class="meta">
+                    <span>📝 20 questions</span>
+                    <span>⏱ 25 min</span>
+                </div>
+                <div class="difficulty">Hard</div>
+                <div class="progress">
+                    <div class="progress-bar"><div class="fill" style="width: 65%;"></div></div>
+                    <div class="progress-label">65% complete</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary w-full">Continue</button>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="assessment-card">
+            <div>
+                <div class="top">
+                    <span class="title">Verbal #07</span>
+                    <span class="badge badge-dark">Completed</span>
+                </div>
+                <div class="meta">
+                    <span>📝 15 questions</span>
+                    <span>⏱ 20 min</span>
+                </div>
+                <div class="difficulty">Easy</div>
+                <div class="progress">
+                    <div class="progress-bar"><div class="fill" style="width: 100%;"></div></div>
+                    <div class="progress-label" style="color: var(--orange);">✓ 14/15 correct</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary w-full">View Result</button>
+        </div>
+    </div>
+
+    <!-- ===== MCQ ARENA ===== -->
+    <div class="arena">
+        <div class="arena-header">
+            <div class="info">
+                <span class="dot"></span>
+                <span>Level 6</span>
+                <span>|</span>
+                <span>Aptitude</span>
+                <span>|</span>
+                <span>Aug 10</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <span class="timer">00:24:38</span>
+                <button class="btn btn-secondary btn-sm">Report</button>
+            </div>
+        </div>
+
+        <div class="arena-body">
+            <div class="arena-question">
+                <div class="q-number">
+                    Question 1 / 10
+                    <span class="badge badge-orange">2 Marks</span>
+                </div>
+                <div class="q-text">
+                    What is the probability of getting at least one head when two fair coins are tossed?
+                </div>
+                <div class="q-example">
+                    <strong>Example:</strong> Consider all possible outcomes: HH, HT, TH, TT.
+                </div>
+                <div class="q-constraint">
+                    <strong>Constraint:</strong> Each coin is fair and independent.
+                </div>
+            </div>
+
+            <div class="arena-answers">
+                <h4>Your Answer</h4>
+                <div class="option selected">
+                    <span class="letter">B</span>
+                    <span class="text">3/4</span>
+                </div>
+                <div class="option">
+                    <span class="letter">A</span>
+                    <span class="text">1/2</span>
+                </div>
+                <div class="option">
+                    <span class="letter">C</span>
+                    <span class="text">1/4</span>
+                </div>
+                <div class="option">
+                    <span class="letter">D</span>
+                    <span class="text">1</span>
+                </div>
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light);">
+                    <button class="btn btn-primary w-full" onclick="openModal()">Submit Assessment</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="arena-nav">
+            <button class="btn btn-secondary btn-sm">← Previous</button>
+            <div class="palette">
+                <button class="active">1</button>
+                <button>2</button>
+                <button class="answered">3</button>
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button>10</button>
+            </div>
+            <button class="btn btn-primary btn-sm">Next →</button>
+        </div>
+    </div>
+
+    <!-- ===== MODAL ===== -->
+    <div class="modal-overlay" id="submitModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="icon">⌛</div>
+                <div>
+                    <div class="modal-title">Submit Assessment?</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">You have answered 8 of 10 questions.</div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <span style="display: block; background: var(--orange-pale); color: var(--orange); padding: 8px 12px; border-radius: var(--radius-sm); font-weight: 600;">
+                    ⚠️ 2 questions remain unanswered.
+                </span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Continue</button>
+                <button class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div>
+            <div class="brand">✦ <span>Assess</span>IQ</div>
+            <div class="sub">Learn. Build. Grow.</div>
+        </div>
+        <div>
+            <h6>Platform</h6>
+            <ul>
+                <li>Courses</li>
+                <li>Assessments</li>
+                <li>Practice</li>
+                <li>Leaderboard</li>
+            </ul>
+        </div>
+        <div>
+            <h6>Resources</h6>
+            <ul>
+                <li>Documentation</li>
+                <li>Help Center</li>
+                <li>Community</li>
+            </ul>
+        </div>
+        <div>
+            <h6>Company</h6>
+            <ul>
+                <li>About</li>
+                <li>Contact</li>
+                <li>Privacy</li>
+                <li>Terms</li>
+            </ul>
+        </div>
+    </footer>
+
+    <div class="footer-bottom">
+        © 2026 <span>AssessIQ</span> · All rights reserved
+    </div>
+
+</div>
+
+<script>
+    // ============================================================
+    //  THEME TOGGLE
+    // ============================================================
+    const themeToggle = document.getElementById('themeToggle');
+    const themeLabel = document.getElementById('themeLabel');
+    const themeIcon = document.getElementById('themeIcon');
+    let isDark = false;
+
+    themeToggle.addEventListener('click', () => {
+        isDark = !isDark;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+        themeLabel.textContent = isDark ? 'Dark' : 'Light';
+        themeIcon.textContent = isDark ? '🌙' : '☀️';
+    });
+
+    // ============================================================
+    //  MODAL
+    // ============================================================
+    function openModal() {
+        document.getElementById('submitModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal() {
+        document.getElementById('submitModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    
+    document.getElementById('submitModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
+
+</body>
+</html>
