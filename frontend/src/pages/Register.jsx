@@ -10,12 +10,10 @@ const Register = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Theme support
-  const [theme, setTheme] = useState(() => localStorage.getItem("dealflow_theme") || "light");
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("dealflow_theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", "light");
+    localStorage.removeItem("dealflow_theme");
+  }, []);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -48,20 +46,6 @@ const Register = () => {
         transition: "background 0.3s ease",
       }}
     >
-      {/* Top Header Theme Controls */}
-      <div style={{ position: "absolute", top: "20px", right: "24px" }}>
-        <button
-          type="button"
-          className="theme-toggle"
-          onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-        >
-          <span className="toggle-icon">{theme === "dark" ? "🌙" : "☀️"}</span>
-          <span className="toggle-track">
-            <span className="toggle-thumb" />
-          </span>
-          <span className="toggle-label">{theme === "dark" ? "Dark" : "Light"}</span>
-        </button>
-      </div>
 
       <div
         className="card"

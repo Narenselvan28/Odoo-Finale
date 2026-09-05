@@ -10,15 +10,13 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Theme support on login screen
-  const [theme, setTheme] = useState(() => localStorage.getItem("dealflow_theme") || "light");
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("dealflow_theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", "light");
+    localStorage.removeItem("dealflow_theme");
+  }, []);
 
   const personas = [
-    { label: "Admin", email: "admin@dealflow360.com", role: "Superuser", color: "var(--orange)" },
+    { label: "Admin", email: "admin@dealflow360.com", role: "Superuser", color: "var(--brand)" },
     { label: "Sales Dir", email: "sales.manager@dealflow360.com", role: "L1 Director", color: "#d97706" },
     { label: "Account Exec", email: "sales.rep@dealflow360.com", role: "CPQ Quoter", color: "#0284c7" },
     { label: "Finance Lead", email: "finance@dealflow360.com", role: "L2 Finance", color: "#059669" },
@@ -60,20 +58,6 @@ const Login = () => {
         transition: "background 0.3s ease",
       }}
     >
-      {/* Top Header Controls */}
-      <div style={{ position: "absolute", top: "20px", right: "24px" }}>
-        <button
-          type="button"
-          className="theme-toggle"
-          onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-        >
-          <span className="toggle-icon">{theme === "dark" ? "🌙" : "☀️"}</span>
-          <span className="toggle-track">
-            <span className="toggle-thumb" />
-          </span>
-          <span className="toggle-label">{theme === "dark" ? "Dark" : "Light"}</span>
-        </button>
-      </div>
 
       <div
         className="card"

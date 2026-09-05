@@ -27,12 +27,11 @@ const CustomerPortal = () => {
   const [negotiations, setNegotiations] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Theme support
-  const [theme, setTheme] = useState(() => localStorage.getItem("dealflow_theme") || "light");
+  // Enforce light theme
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("dealflow_theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", "light");
+    localStorage.removeItem("dealflow_theme");
+  }, []);
 
   // Negotiation Form State
   const [counterDiscount, setCounterDiscount] = useState(15);
@@ -221,18 +220,6 @@ const CustomerPortal = () => {
         </div>
 
         <div className="header-actions">
-          <button
-            type="button"
-            className="theme-toggle"
-            onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-          >
-            <span className="toggle-icon">{theme === "dark" ? "🌙" : "☀️"}</span>
-            <span className="toggle-track">
-              <span className="toggle-thumb" />
-            </span>
-            <span className="toggle-label">{theme === "dark" ? "Dark" : "Light"}</span>
-          </button>
-
           <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Order Status:</span>
           {getStatusBadge(quoteData.status)}
         </div>

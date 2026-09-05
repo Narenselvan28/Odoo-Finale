@@ -24,19 +24,10 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Dark/Light Mode State synced with localStorage and html data-theme
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("dealflow_theme") || "light";
-  });
-
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("dealflow_theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  };
+    document.documentElement.setAttribute("data-theme", "light");
+    localStorage.removeItem("dealflow_theme");
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -117,20 +108,6 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
         </div>
 
         <div className="header-actions">
-          {/* Interactive Sliding Theme Switcher from ref ui.txt */}
-          <button
-            type="button"
-            className="theme-toggle"
-            onClick={toggleTheme}
-            title="Toggle Light / Dark Mode"
-          >
-            <span className="toggle-icon">{theme === "dark" ? "🌙" : "☀️"}</span>
-            <span className="toggle-track">
-              <span className="toggle-thumb" />
-            </span>
-            <span className="toggle-label">{theme === "dark" ? "Dark" : "Light"}</span>
-          </button>
-
           {/* User Persona Chip */}
           <div
             style={{
