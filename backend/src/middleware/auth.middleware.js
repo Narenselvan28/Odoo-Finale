@@ -1,5 +1,6 @@
-﻿const { verifyToken } = require("../utils/jwt.utils");
+const { verifyToken } = require("../utils/jwt.utils");
 const User = require("../models/User.model");
+const Role = require("../models/Role.model");
 
 const protect = async (req, res, next) => {
   try {
@@ -11,9 +12,17 @@ const protect = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = verifyToken(token);
 
-    const user = await User.findByPk(decoded.id);
+    const user = await User.findByPk(decoded.id, {
+      include: [{ model: Role, attributes: ["id", "name"] }],
+    });
+
     if (!user || !user.isActive) {
       return res.status(401).json({ message: "User not found or inactive" });
+    }
+
+    // Normalize role string (prefer Role association or fallback to column)
+    if (user.Role && user.Role.name) {
+      user.role = user.Role.name;
     }
 
     req.user = user;
@@ -24,10 +33,27 @@ const protect = async (req, res, next) => {
 };
 
 const restrictTo = (...roles) => (req, res, next) => {
-  if (!roles.includes(req.user.role)) {
-    return res.status(403).json({ message: "Access denied" });
+  const currentRole = req.user?.role || req.user?.Role?.name;
+  if (!roles.includes(currentRole)) {
+    return res.status(403).json({
+      message: `Access denied. Requires one of [${roles.join(", ")}]. Current role: '${currentRole}'`,
+    });
   }
   next();
 };
 
-module.exports = { protect, restrictTo };
+const requireAdmin = restrictTo("admin");
+const requireSalesManager = restrictTo("admin", "sales_manager");
+const requireSales = restrictTo("admin", "sales_manager", "sales_rep");
+const requireFinance = restrictTo("admin", "finance_manager");
+const requireWarehouse = restrictTo("admin", "warehouse_manager");
+
+module.exports = {
+  protect,
+  restrictTo,
+  requireAdmin,
+  requireSalesManager,
+  requireSales,
+  requireFinance,
+  requireWarehouse,
+};

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { approvalsApi, approvalAuditLogsApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 import {
   CheckSquare,
   Clock,
@@ -16,6 +17,8 @@ import {
 
 const ApprovalsDesk = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const canApprove = user?.role === "admin" || user?.role === "sales_manager";
   const [approvals, setApprovals] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,16 +207,22 @@ const ApprovalsDesk = () => {
                       {item.reason || "Automatic trigger: concession exceeds customer tier standard limit."}
                     </td>
                     <td>
-                      <button
-                        onClick={() => {
-                          setSelectedApproval(item);
-                          setActionStatus("APPROVED");
-                          setActionReason("");
-                        }}
-                        className="btn btn-primary btn-sm"
-                      >
-                        Review Request
-                      </button>
+                      {canApprove ? (
+                        <button
+                          onClick={() => {
+                            setSelectedApproval(item);
+                            setActionStatus("APPROVED");
+                            setActionReason("");
+                          }}
+                          className="btn btn-primary btn-sm"
+                        >
+                          Review Request
+                        </button>
+                      ) : (
+                        <span className="badge badge-draft" title="Director sign-off required">
+                          Director Required
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))

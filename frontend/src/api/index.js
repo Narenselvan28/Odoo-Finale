@@ -62,6 +62,9 @@ export const quotationsApi = {
   create: (data) => api.post("/quotations", data),
   update: (id, data) => api.put(`/quotations/${id}`, data),
   updateStatus: (id, status) => api.patch(`/quotations/${id}/status`, { status }),
+  evaluateRisk: (data) => api.post("/quotations/evaluate-risk", data),
+  getPublic: (id) => api.get(`/quotations/public/${id}`),
+  negotiatePublic: (id, data) => api.post(`/quotations/public/${id}/negotiate`, data),
   remove: (id) => api.delete(`/quotations/${id}`),
 };
 

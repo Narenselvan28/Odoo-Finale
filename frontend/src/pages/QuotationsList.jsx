@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  PackageCheck
+  PackageCheck,
+  MessageSquare
 } from "lucide-react";
 
 const QuotationsList = () => {
@@ -90,6 +91,8 @@ const QuotationsList = () => {
         return <span className="badge badge-approved"><CheckCircle2 size={12} /> Approved</span>;
       case "PENDING_APPROVAL":
         return <span className="badge badge-pending"><Clock size={12} /> Pending Approval</span>;
+      case "UNDER_NEGOTIATION":
+        return <span className="badge badge-enterprise" style={{ background: "#6366f1", color: "#fff" }}><MessageSquare size={12} /> Under Negotiation</span>;
       case "CONFIRMED":
         return <span className="badge badge-confirmed"><PackageCheck size={12} /> Confirmed</span>;
       case "REJECTED":
@@ -241,6 +244,7 @@ const QuotationsList = () => {
                       >
                         <option value="DRAFT">DRAFT</option>
                         <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
+                        <option value="UNDER_NEGOTIATION">UNDER_NEGOTIATION</option>
                         <option value="APPROVED">APPROVED</option>
                         <option value="CONFIRMED">CONFIRMED</option>
                         <option value="REJECTED">REJECTED</option>
@@ -249,6 +253,15 @@ const QuotationsList = () => {
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: "0.25rem" }}>
+                        <Link
+                          to={`/portal/${q.id}`}
+                          target="_blank"
+                          className="btn btn-ghost btn-sm"
+                          title="Open Customer Live Negotiation Portal"
+                          style={{ color: "#6366f1", padding: "4px" }}
+                        >
+                          <MessageSquare size={14} />
+                        </Link>
                         <Link to="/cpq" className="btn btn-ghost btn-sm" title="Open in Studio" style={{ padding: "4px" }}>
                           <ExternalLink size={14} />
                         </Link>

@@ -16,6 +16,9 @@ import InventoryDesk from "./pages/InventoryDesk";
 import BillingDesk from "./pages/BillingDesk";
 import DealIntelligence from "./pages/DealIntelligence";
 import UsersAdmin from "./pages/UsersAdmin";
+import CustomerPortal from "./pages/CustomerPortal";
+import PipelineKanban from "./pages/PipelineKanban";
+import ReportingDesk from "./pages/ReportingDesk";
 
 function App() {
   return (
@@ -25,6 +28,8 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            {/* Customer-Facing Live Negotiation Portal (Spec B8 - Publicly Accessible) */}
+            <Route path="/portal/:id" element={<CustomerPortal />} />
 
             {/* Protected Enterprise Routes */}
             <Route
@@ -48,6 +53,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <QuotationsList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pipeline"
+              element={
+                <PrivateRoute>
+                  <PipelineKanban />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reporting"
+              element={
+                <PrivateRoute>
+                  <ReportingDesk />
                 </PrivateRoute>
               }
             />

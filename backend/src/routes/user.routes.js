@@ -1,5 +1,5 @@
-﻿const router = require("express").Router();
-const { protect, restrictTo } = require("../middleware/auth.middleware");
+const router = require("express").Router();
+const { protect, requireAdmin } = require("../middleware/auth.middleware");
 const {
   getAllUsers,
   getUserById,
@@ -8,10 +8,11 @@ const {
 } = require("../controllers/user.controller");
 
 router.use(protect);
+router.use(requireAdmin);
 
-router.get("/", restrictTo("admin"), getAllUsers);
+router.get("/", getAllUsers);
 router.get("/:id", getUserById);
 router.put("/:id", updateUser);
-router.delete("/:id", restrictTo("admin"), deleteUser);
+router.delete("/:id", deleteUser);
 
 module.exports = router;
