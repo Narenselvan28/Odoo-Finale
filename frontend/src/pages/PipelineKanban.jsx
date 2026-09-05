@@ -24,7 +24,7 @@ import {
 const STAGES = [
   { id: "DRAFT", label: "Draft & Scoping", color: "#64748b", icon: Clock },
   { id: "PENDING_APPROVAL", label: "Governance Approval", color: "#f59e0b", icon: ShieldAlert },
-  { id: "UNDER_NEGOTIATION", label: "Portal Negotiation", color: "#F4510B", icon: MessageSquare },
+  { id: "UNDER_NEGOTIATION", label: "Portal Negotiation", color: "#714B67", icon: MessageSquare },
   { id: "APPROVED", label: "Approved & Sent", color: "#0284c7", icon: CheckCircle2 },
   { id: "CONFIRMED", label: "Confirmed Order", color: "#10b981", icon: PackageCheck },
   { id: "FULFILLMENT", label: "Logistics Dispatch", color: "#0d9488", icon: Truck },
