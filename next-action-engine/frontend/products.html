@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products & Catalog - DealFlow360 ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-8">
+                    <a href="dashboard.html" class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                            ✦
+                        </div>
+                        <span class="font-bold text-lg text-slate-900 tracking-tight">DealFlow<span class="text-blue-600">360</span></span>
+                    </a>
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="dashboard.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Dashboard</a>
+                        <a href="products.html" class="px-3.5 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">Products</a>
+                        <a href="quotations.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Quotations</a>
+                        <a href="customers.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Customers</a>
+                        <a href="orders.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Orders</a>
+                        <a href="purchases.html" class="px-3.5 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg">Purchases</a>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full border border-slate-200 font-mono">
+                        Session: <span id="current-session-badge" class="font-bold text-slate-800">...</span>
+                    </div>
+                    <a href="purchases.html" class="relative p-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span id="cart-count" class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- Header & Search Controls -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Product Catalog</h1>
+                <p class="text-sm text-slate-500 mt-1">Enterprise hardware, accessories, and warranty coverage.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <input 
+                    type="text" 
+                    id="search-box" 
+                    placeholder="Search products (e.g. laptop)..." 
+                    class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 shadow-sm"
+                />
+            </div>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+            <button class="cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white shadow-sm" data-category="all">All Products</button>
+            <button class="cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50" data-category="laptop">Laptops</button>
+            <button class="cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50" data-category="phone">Phones</button>
+            <button class="cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50" data-category="headphones">Headphones</button>
+            <button class="cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50" data-category="mouse">Mice & Keyboards</button>
+            <button class="cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50" data-category="warranty">Warranty</button>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Populated dynamically via JS -->
+            <div class="col-span-3 text-center py-12 text-slate-400 text-sm">Loading enterprise catalog...</div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+            DealFlow360 Next Action ERP · Interactive Machine Learning Recommendation Demo
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/actionTracker.js"></script>
+    <script src="js/recommendation.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let allProducts = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Track page visit (Low priority -> quiet)
+            trackAction('open_products');
+
+            // Load products from SQLite
+            const erpData = await API.getErpData();
+            if (erpData && erpData.products) {
+                allProducts = erpData.products;
+                renderProducts(allProducts);
+            }
+
+            // Search input listener (Low priority -> quiet)
+            const searchBox = document.getElementById('search-box');
+            searchBox.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                if (query.length > 2) {
+                    trackAction('search_product', { query: query });
+                }
+                const filtered = allProducts.filter(p => 
+                    p.name.toLowerCase().includes(query) || 
+                    p.category.toLowerCase().includes(query) ||
+                    p.description.toLowerCase().includes(query)
+                );
+                renderProducts(filtered);
+            });
+
+            // Category filter listeners
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.cat-btn').forEach(b => {
+                        b.className = 'cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50';
+                    });
+                    btn.className = 'cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white shadow-sm';
+                    
+                    const cat = btn.getAttribute('data-category');
+                    if (cat === 'all') {
+                        renderProducts(allProducts);
+                    } else if (cat === 'mouse') {
+                        renderProducts(allProducts.filter(p => p.category === 'mouse' || p.category === 'keyboard'));
+                    } else {
+                        renderProducts(allProducts.filter(p => p.category === cat));
+                    }
+                });
+            });
+        });
+
+        function renderProducts(products) {
+            const grid = document.getElementById('product-grid');
+            if (!products || products.length === 0) {
+                grid.innerHTML = '<div class="col-span-3 text-center py-12 text-slate-400 text-sm">No products found matching criteria.</div>';
+                return;
+            }
+
+            grid.innerHTML = products.map(p => `
+                <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md">${p.category}</span>
+                            <span class="text-xs text-slate-400 font-mono">${p.id}</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2">${p.name}</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">${p.description}</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
+                        <div class="text-lg font-bold text-slate-900 font-mono">$${p.price.toFixed(2)}</div>
+                        <button 
+                            onclick="handlePurchase('${p.id}', '${p.category}', '${p.name.replace(/'/g, "\\'")}', ${p.price})"
+                            class="px-3.5 py-2 bg-slate-900 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                        >
+                            <span>Purchase</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handlePurchase(productId, category, productName, price) {
+            // High-Intent Action Trigger!
+            const actionName = `purchase_${category}`;
+
+            // Add to session cart
+            let cart = JSON.parse(sessionStorage.getItem('dealflow360_cart') || '[]');
+            cart.push({ id: productId, name: productName, price: price, addedAt: new Date().toLocaleTimeString() });
+            sessionStorage.setItem('dealflow360_cart', JSON.stringify(cart));
+
+            document.getElementById('cart-count').textContent = cart.length;
+
+            showToast(`✓ Purchased ${productName}!`);
+
+            // Track high intent action -> Backend runs ML Next-Action Prediction!
+            await trackAction(actionName, {
+                product_id: productId,
+                product_name: productName,
+                category: category,
+                price: price
+            });
+        }
+    </script>
+</body>
+</html>
