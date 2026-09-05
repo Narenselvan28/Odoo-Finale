@@ -11,6 +11,7 @@ import {
 } from "../api";
 import { Link } from "react-router-dom";
 import {
+  LayoutDashboard,
   TrendingUp,
   FileSpreadsheet,
   Clock,
