@@ -208,7 +208,7 @@ const warehouseNames = ["Mumbai Central WH","Delhi North WH","Bangalore Tech Par
     const quotationsData = Array.from({ length: 200 }, (_, i) => {
       const status = pick(quotationStatuses);
       return {
-        quotation_number: `QUO-2024-${String(i + 1).padStart(5, "0")}`,
+        quotation_number: `QT-2026-${String(i + 1).padStart(3, "0")}`,
         customer_id: pick(customers).id,
         sales_rep_id: pick(users).id,
         status,

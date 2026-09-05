@@ -219,7 +219,7 @@ const QuotationsList = () => {
                   <tr key={q.id}>
                     <td>
                       <span className="tnum" style={{ fontWeight: 600, color: "var(--color-accent)" }}>
-                        #{q.id}
+                        {q.quotation_number || `QT-2026-${String(q.id).padStart(3, "0")}`}
                       </span>
                     </td>
                     <td>

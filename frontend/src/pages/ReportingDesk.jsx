@@ -156,7 +156,7 @@ const ReportingDesk = () => {
 
     const rows = filtered.map((q) => [
       q.id,
-      q.quotation_number || `QUO-${q.id}`,
+      q.quotation_number || `QT-2026-${String(q.id).padStart(3, "0")}`,
       `"${(q.Customer?.name || q.customer_name || "Enterprise Customer").replace(/"/g, '""')}"`,
       q.status,
       q.subtotal || 0,
@@ -552,7 +552,7 @@ const ReportingDesk = () => {
                     </td>
                     <td>
                       <span style={{ fontSize: "0.8125rem", fontWeight: 500 }}>
-                        {q.quotation_number || `QUO-${q.id}`}
+                        {q.quotation_number || `QT-2026-${String(q.id).padStart(3, "0")}`}
                       </span>
                     </td>
                     <td>

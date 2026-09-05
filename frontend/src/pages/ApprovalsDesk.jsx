@@ -178,7 +178,7 @@ const ApprovalsDesk = () => {
                     </td>
                     <td>
                       <span className="tnum" style={{ color: "var(--color-accent)", fontWeight: 600 }}>
-                        Quotation #{item.quotation_id}
+                        QT-2026-{String(item.quotation_id).padStart(3, "0")}
                       </span>
                     </td>
                     <td>
@@ -238,7 +238,7 @@ const ApprovalsDesk = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h3 style={{ fontSize: "1.125rem", fontWeight: 600 }}>
-                Review Quotation #{selectedApproval.quotation_id} Governance Exception
+                Review Quotation QT-2026-{String(selectedApproval.quotation_id).padStart(3, "0")} Governance Exception
               </h3>
               <button
                 onClick={() => setSelectedApproval(null)}
@@ -252,7 +252,7 @@ const ApprovalsDesk = () => {
               <div style={{ backgroundColor: "var(--color-paper-2)", padding: "0.75rem", borderRadius: "var(--radius-md)", fontSize: "0.8125rem" }}>
                 <div><strong>Request ID:</strong> #{selectedApproval.id}</div>
                 <div><strong>Level:</strong> Level {selectedApproval.approval_level || 1} ({selectedApproval.approver_role || "Sales Director"})</div>
-                <div><strong>Quotation ID:</strong> #{selectedApproval.quotation_id}</div>
+                <div><strong>Quotation Ref:</strong> QT-2026-{String(selectedApproval.quotation_id).padStart(3, "0")}</div>
               </div>
 
               <div>

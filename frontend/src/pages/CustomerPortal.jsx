@@ -258,7 +258,7 @@ const CustomerPortal = () => {
       {/* ===== PAGE HEADER ===== */}
       <div className="page-header">
         <div className="label">Commercial Quotation</div>
-        <h1>Proposal #{quoteData.quotation_number || `QUO-${quoteData.id}`}</h1>
+        <h1>Proposal {quoteData.quotation_number || `QT-2026-${String(quoteData.id).padStart(3, "0")}`}</h1>
         <div className="accent-line"></div>
         <p>Prepared for {quoteData.Customer?.name || `Customer Account #${quoteData.customer_id}`}</p>
       </div>

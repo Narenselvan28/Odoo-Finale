@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const Quotation = require("../models/Quotation.model");
 const QuotationItem = require("../models/QuotationItem.model");
 const Customer = require("../models/Customer.model");
@@ -9,6 +10,33 @@ const ApprovalRequest = require("../models/ApprovalRequest.model");
 const Negotiation = require("../models/Negotiation.model");
 const Alert = require("../models/Alert.model");
 const { computeBlendedRisk } = require("../utils/blendedRisk");
+
+// Helper to generate sequential quotation number in QT-YYYY-XXX format
+const generateQuotationNumber = async () => {
+  const year = new Date().getFullYear();
+  const prefix = `QT-${year}-`;
+  const latestQuote = await Quotation.findOne({
+    where: {
+      quotation_number: {
+        [Op.like]: `${prefix}%`,
+      },
+    },
+    order: [["id", "DESC"]],
+  });
+
+  let nextSeq = 1;
+  if (latestQuote && latestQuote.quotation_number) {
+    const parts = latestQuote.quotation_number.split("-");
+    const lastNum = parseInt(parts[parts.length - 1], 10);
+    if (!isNaN(lastNum)) {
+      nextSeq = lastNum + 1;
+    }
+  } else {
+    const count = await Quotation.count();
+    nextSeq = count + 1;
+  }
+  return `${prefix}${String(nextSeq).padStart(3, "0")}`;
+};
 
 // GET /api/quotations
 const getAll = async (req, res) => {
@@ -48,9 +76,13 @@ const create = async (req, res) => {
   try {
     const { items, ...quotationData } = req.body;
 
-    const count = await Quotation.count();
-    quotationData.quotation_number =
-      quotationData.quotation_number || `QUO-${Date.now()}-${count + 1}`;
+    if (
+      !quotationData.quotation_number ||
+      quotationData.quotation_number.startsWith("QUO-") ||
+      quotationData.quotation_number.startsWith("QTE-")
+    ) {
+      quotationData.quotation_number = await generateQuotationNumber();
+    }
     quotationData.sales_rep_id = quotationData.sales_rep_id || req.user?.id || 1;
 
     // Fetch customer with tier for risk scoring

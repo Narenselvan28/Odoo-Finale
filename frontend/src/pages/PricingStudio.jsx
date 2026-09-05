@@ -46,8 +46,8 @@ const PricingStudio = () => {
   const [saving, setSaving] = useState(false);
 
   // Quote Header State
-  const [quoteNumber] = useState(
-    `QTE-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`
+  const [quoteNumber, setQuoteNumber] = useState(
+    `QT-${new Date().getFullYear()}-001`
   );
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [currency] = useState("INR");
@@ -90,12 +90,13 @@ const PricingStudio = () => {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const [custRes, prodRes, whRes, invRes, recRes] = await Promise.all([
+        const [custRes, prodRes, whRes, invRes, recRes, quotesRes] = await Promise.all([
           customersApi.getAll().catch(() => ({ data: [] })),
           productsApi.getAll().catch(() => ({ data: [] })),
           warehousesApi.getAll().catch(() => ({ data: [] })),
           inventoryApi.getAll().catch(() => ({ data: [] })),
           productRecommendationsApi.getAll().catch(() => ({ data: [] })),
+          quotationsApi.getAll().catch(() => ({ data: [] })),
         ]);
 
         const custList = custRes.data?.customers || custRes.data || [];
@@ -103,12 +104,17 @@ const PricingStudio = () => {
         const whList = whRes.data || [];
         const invList = invRes.data || [];
         const recList = recRes.data || [];
+        const quotes = quotesRes.data || [];
 
         setCustomers(custList);
         setProducts(prodList);
         setWarehouses(whList);
         setInventoryList(invList);
         setDbRecommendations(recList);
+
+        // Set next sequential quotation number in QT-YYYY-XXX format
+        const nextNum = quotes.length + 1;
+        setQuoteNumber(`QT-${new Date().getFullYear()}-${String(nextNum).padStart(3, "0")}`);
 
         if (custList.length > 0) {
           setSelectedCustomerId(custList[0].id);

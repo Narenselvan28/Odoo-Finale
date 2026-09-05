@@ -173,7 +173,7 @@ const BillingDesk = () => {
                       </span>
                     </td>
                     <td className="tnum" style={{ color: "var(--color-text-secondary)" }}>
-                      Quote #{inv.quotation_id}
+                      QT-2026-{String(inv.quotation_id).padStart(3, "0")}
                     </td>
                     <td>
                       <span className="badge badge-draft">{inv.invoice_type || "ONE_TIME"}</span>

@@ -352,7 +352,7 @@ const PipelineKanban = () => {
                               color: "var(--color-accent)",
                             }}
                           >
-                            #{deal.id} · {deal.quotation_number?.slice(0, 12) || "QUO"}
+                            {deal.quotation_number || `QT-2026-${String(deal.id).padStart(3, "0")}`}
                           </span>
                           <span style={{ fontSize: "0.6875rem", color: "var(--color-text-muted)" }}>
                             {deal.created_at ? new Date(deal.created_at).toLocaleDateString() : "Recent"}

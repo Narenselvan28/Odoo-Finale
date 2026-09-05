@@ -213,7 +213,7 @@ const Dashboard = () => {
                   <tr key={q.id}>
                     <td>
                       <span className="tnum" style={{ fontWeight: 700, color: "var(--orange)" }}>
-                        #{q.id} · {q.quotation_number?.slice(0, 14) || "QUO"}
+                        {q.quotation_number || `QT-2026-${String(q.id).padStart(3, "0")}`}
                       </span>
                     </td>
                     <td>
