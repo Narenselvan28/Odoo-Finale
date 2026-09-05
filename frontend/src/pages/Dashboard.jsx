@@ -16,6 +16,7 @@ import {
   FileSpreadsheet,
   Clock,
   ShieldCheck,
+  CheckSquare,
   Plus,
   ArrowRight,
   AlertTriangle,
