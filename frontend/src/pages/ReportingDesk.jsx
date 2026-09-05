@@ -245,14 +245,22 @@ const ReportingDesk = () => {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <a
+            href="/DealFlow360_Seeded_Database.xlsx"
+            download="DealFlow360_Seeded_Database.xlsx"
+            className="btn btn-primary btn-sm"
+            title="Download full multi-tab workbook with all seeded data"
+          >
+            <FileSpreadsheet size={14} /> Download Seeded Database (Excel)
+          </a>
           <button onClick={handleExportCSV} className="btn btn-secondary btn-sm">
             <Download size={14} /> Export CSV
           </button>
           <button onClick={handlePrint} className="btn btn-secondary btn-sm">
             <Printer size={14} /> Print Dossier
           </button>
-          <button onClick={fetchData} className="btn btn-primary btn-sm">
+          <button onClick={fetchData} className="btn btn-secondary btn-sm">
             <RefreshCw size={14} className={loading ? "spin" : ""} /> Refresh
           </button>
         </div>
