@@ -31,6 +31,11 @@ const InventoryDesk = () => {
   const [selectedQuoteId, setSelectedQuoteId] = useState("");
   const [manualOverride, setManualOverride] = useState(false);
   const [backorderConsolidated, setBackorderConsolidated] = useState(false);
+  const [committedSplits, setCommittedSplits] = useState({});
+  const [customAllocations, setCustomAllocations] = useState({
+    1: { primary: 4, secondary: 2 },
+    2: { primary: 3, secondary: 1 },
+  });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -77,10 +82,23 @@ const InventoryDesk = () => {
   }, [inventory, searchQuery]);
 
   const selectedQuote = quotations.find((q) => String(q.id) === String(selectedQuoteId));
+  const isCurrentQuoteCommitted = !!committedSplits[selectedQuoteId];
 
-  // Synthetic or live order items for warehouse splitting calculation
+  // Dynamic order items for warehouse splitting calculation
   const orderSplitItems = useMemo(() => {
     if (!selectedQuote) return [];
+
+    const p1Alloc = backorderConsolidated ? { primary: 6, secondary: 0 } : (customAllocations[1] || { primary: 4, secondary: 2 });
+    const p2Alloc = backorderConsolidated ? { primary: 5, secondary: 0 } : (customAllocations[2] || { primary: 3, secondary: 1 });
+
+    const p1Backorder = Math.max(0, 6 - p1Alloc.primary - p1Alloc.secondary);
+    const p2Backorder = Math.max(0, 5 - p2Alloc.primary - p2Alloc.secondary);
+
+    const p1Shipments = (p1Alloc.primary > 0 ? 1 : 0) + (p1Alloc.secondary > 0 ? 1 : 0);
+    const p2Shipments = (p2Alloc.primary > 0 ? 1 : 0) + (p2Alloc.secondary > 0 ? 1 : 0);
+
+    const p1Freight = p1Shipments <= 1 ? 450 : 850;
+    const p2Freight = p2Shipments <= 1 ? 650 : 1250;
 
     return [
       {
@@ -89,13 +107,13 @@ const InventoryDesk = () => {
         orderedQty: 6,
         primaryWh: warehouses[0]?.name || "Mumbai Central Hub",
         primaryAvail: 15,
-        primaryAllocated: backorderConsolidated ? 6 : 4,
+        primaryAllocated: p1Alloc.primary,
         secondaryWh: warehouses[1]?.name || "Bengaluru Tech Depot",
         secondaryAvail: 8,
-        secondaryAllocated: backorderConsolidated ? 0 : 2,
-        backorderQty: 0,
-        shipments: backorderConsolidated ? 1 : 2,
-        freightCost: backorderConsolidated ? 450 : 850,
+        secondaryAllocated: p1Alloc.secondary,
+        backorderQty: p1Backorder,
+        shipments: Math.max(1, p1Shipments),
+        freightCost: p1Freight,
       },
       {
         id: 2,
@@ -103,33 +121,77 @@ const InventoryDesk = () => {
         orderedQty: 5,
         primaryWh: warehouses[0]?.name || "Mumbai Central Hub",
         primaryAvail: 3,
-        primaryAllocated: backorderConsolidated ? 5 : 3,
+        primaryAllocated: p2Alloc.primary,
         secondaryWh: warehouses[2]?.name || "Delhi Regional Warehouse",
         secondaryAvail: 4,
-        secondaryAllocated: backorderConsolidated ? 0 : 1,
-        backorderQty: backorderConsolidated ? 0 : 1,
-        shipments: backorderConsolidated ? 1 : 2,
-        freightCost: backorderConsolidated ? 650 : 1250,
+        secondaryAllocated: p2Alloc.secondary,
+        backorderQty: p2Backorder,
+        shipments: Math.max(1, p2Shipments),
+        freightCost: p2Freight,
       },
     ];
-  }, [selectedQuote, warehouses, backorderConsolidated]);
+  }, [selectedQuote, warehouses, backorderConsolidated, customAllocations]);
 
   const totalSplitShipments = orderSplitItems.reduce((acc, i) => Math.max(acc, i.shipments), 1);
   const totalFreightFactor = orderSplitItems.reduce((acc, i) => acc + i.freightCost, 0);
   const hasBackorder = !backorderConsolidated && orderSplitItems.some((i) => i.backorderQty > 0);
 
+  const handleAllocationChange = (itemId, field, val) => {
+    const num = Math.max(0, Number(val) || 0);
+    setCustomAllocations((prev) => ({
+      ...prev,
+      [itemId]: {
+        ...(prev[itemId] || { primary: 0, secondary: 0 }),
+        [field]: num,
+      },
+    }));
+  };
+
   const handleAcceptSplit = () => {
+    const trackingCode = `DF360-TRK-${Math.floor(100000 + Math.random() * 900000)}`;
+    setCommittedSplits((prev) => ({
+      ...prev,
+      [selectedQuoteId]: {
+        committed: true,
+        trackingCode,
+        consignments: totalSplitShipments,
+        freight: totalFreightFactor,
+        timestamp: new Date().toLocaleTimeString(),
+      },
+    }));
+
+    // Inject simulated live allocation records into allocations state
+    setAllocations((prev) => [
+      {
+        id: Date.now(),
+        quotation_item_id: selectedQuote?.id || 101,
+        warehouse_id: warehouses[0]?.id || 1,
+        allocated_quantity: orderSplitItems[0]?.primaryAllocated || 4,
+      },
+      {
+        id: Date.now() + 1,
+        quotation_item_id: selectedQuote?.id || 101,
+        warehouse_id: warehouses[1]?.id || 2,
+        allocated_quantity: orderSplitItems[0]?.secondaryAllocated || 2,
+      },
+      ...prev,
+    ]);
+
     showToast({
-      title: "Warehouse Split Committed",
-      message: `Fulfillment allocation for ${selectedQuote?.quotation_number || "Order"} routed across ${totalSplitShipments} consignments.`,
+      title: "Warehouse Split Committed & Dispatched",
+      message: `Fulfillment allocation for ${selectedQuote?.quotation_number || "Order"} routed across ${totalSplitShipments} consignments. Waybill: ${trackingCode}`,
       type: "success",
     });
   };
 
   const handleConsolidateBackorder = () => {
     setBackorderConsolidated(true);
+    setCustomAllocations({
+      1: { primary: 6, secondary: 0 },
+      2: { primary: 5, secondary: 0 },
+    });
     showToast({
-      title: "Backorders Consolidated",
+      title: "Backorders Consolidated into Central Hub",
       message: "Central Hub replenishment applied. Single shipment unified; second freight fee eliminated!",
       type: "success",
     });
@@ -307,22 +369,91 @@ const InventoryDesk = () => {
             </div>
           )}
 
+          {/* Dispatched Consignment Banner */}
+          {isCurrentQuoteCommitted && (
+            <div
+              style={{
+                padding: "1rem 1.25rem",
+                backgroundColor: "rgba(16, 185, 129, 0.08)",
+                border: "1px solid var(--color-success)",
+                borderRadius: "var(--radius-md)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "1rem",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 700, color: "var(--color-success)", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <CheckCircle2 size={18} /> Split Consignments Dispatched & Waybill Issued
+                </div>
+                <div style={{ fontSize: "0.8rem", color: "var(--color-text-secondary)", marginTop: "3px" }}>
+                  Waybill Number: <strong className="tnum" style={{ color: "var(--color-success)" }}>{committedSplits[selectedQuoteId]?.trackingCode}</strong> · Routed to regional depots at {committedSplits[selectedQuoteId]?.timestamp}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <span className="badge badge-approved tnum" style={{ padding: "6px 12px", fontSize: "0.8125rem" }}>
+                  DISPATCHED ({committedSplits[selectedQuoteId]?.consignments} Shipments)
+                </span>
+                <button
+                  onClick={() => setActiveTab("allocations")}
+                  className="btn btn-sm btn-secondary"
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  View Allocations List →
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Recommended Split Table */}
           <div className="data-card">
             <div className="data-card-header">
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <PackageCheck size={18} color="var(--color-accent)" />
-                <span className="data-card-title">Recommended Stock Split Breakdown (Cost & Shipment Minimization)</span>
+                <span className="data-card-title">
+                  {manualOverride ? "Manual Warehouse Allocation Mode (Live Stepper)" : "Recommended Stock Split Breakdown (Cost & Shipment Minimization)"}
+                </span>
               </div>
               <div style={{ display: "flex", gap: "0.5rem" }}>
+                {manualOverride && (
+                  <button
+                    onClick={() => {
+                      setCustomAllocations({
+                        1: { primary: 4, secondary: 2 },
+                        2: { primary: 3, secondary: 1 },
+                      });
+                      setBackorderConsolidated(false);
+                      showToast({ title: "Split Reset", message: "Restored system recommended warehouse distribution.", type: "info" });
+                    }}
+                    className="btn btn-sm btn-ghost"
+                    style={{ fontSize: "0.75rem" }}
+                  >
+                    <RotateCcw size={12} /> Reset Recommended
+                  </button>
+                )}
                 <button
                   onClick={() => setManualOverride(!manualOverride)}
                   className={`btn btn-sm ${manualOverride ? "btn-primary" : "btn-secondary"}`}
                 >
                   {manualOverride ? "Exit Manual Mode" : "Manual Override"}
                 </button>
-                <button onClick={handleAcceptSplit} className="btn btn-success btn-sm">
-                  <Check size={14} /> Accept Suggested Split
+                <button
+                  onClick={handleAcceptSplit}
+                  disabled={isCurrentQuoteCommitted}
+                  className={`btn btn-sm ${isCurrentQuoteCommitted ? "btn-secondary" : "btn-success"}`}
+                >
+                  {isCurrentQuoteCommitted ? (
+                    <>
+                      <CheckCircle2 size={14} /> Split Routing Committed ✓
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} /> Commit & Dispatch Split
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -348,30 +479,58 @@ const InventoryDesk = () => {
                         {item.orderedQty} units
                       </td>
                       <td>
-                        <div style={{ display: "flex", flexDirection: "column" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                           <span style={{ fontWeight: 600 }}>{item.primaryWh}</span>
                           <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                            Avail: {item.primaryAvail} units ·{" "}
-                            <strong style={{ color: "var(--color-success)" }}>
-                              Allocated: {item.primaryAllocated} units
-                            </strong>
+                            Avail: {item.primaryAvail} units
                           </span>
+                          {manualOverride ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                              <span style={{ fontSize: "0.75rem", fontWeight: 600 }}>Alloc:</span>
+                              <input
+                                type="number"
+                                min="0"
+                                max={item.orderedQty}
+                                value={item.primaryAllocated}
+                                onChange={(e) => handleAllocationChange(item.id, "primary", e.target.value)}
+                                className="input input-sm tnum"
+                                style={{ width: "65px", padding: "2px 6px" }}
+                              />
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: "0.75rem", color: "var(--color-success)", fontWeight: 700 }}>
+                              Allocated: {item.primaryAllocated} units
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td>
-                        {item.secondaryAllocated > 0 ? (
-                          <div style={{ display: "flex", flexDirection: "column" }}>
-                            <span style={{ fontWeight: 600 }}>{item.secondaryWh}</span>
-                            <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                              Avail: {item.secondaryAvail} units ·{" "}
-                              <strong style={{ color: "var(--color-info)" }}>
-                                Allocated: {item.secondaryAllocated} units
-                              </strong>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                          <span style={{ fontWeight: 600 }}>{item.secondaryWh}</span>
+                          <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
+                            Avail: {item.secondaryAvail} units
+                          </span>
+                          {manualOverride ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                              <span style={{ fontSize: "0.75rem", fontWeight: 600 }}>Alloc:</span>
+                              <input
+                                type="number"
+                                min="0"
+                                max={item.orderedQty}
+                                value={item.secondaryAllocated}
+                                onChange={(e) => handleAllocationChange(item.id, "secondary", e.target.value)}
+                                className="input input-sm tnum"
+                                style={{ width: "65px", padding: "2px 6px" }}
+                              />
+                            </div>
+                          ) : item.secondaryAllocated > 0 ? (
+                            <span style={{ fontSize: "0.75rem", color: "var(--color-info)", fontWeight: 700 }}>
+                              Allocated: {item.secondaryAllocated} units
                             </span>
-                          </div>
-                        ) : (
-                          <span style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>None (Fully Met at Primary)</span>
-                        )}
+                          ) : (
+                            <span style={{ color: "var(--color-text-muted)", fontSize: "0.75rem" }}>None (Fully Met at Primary)</span>
+                          )}
+                        </div>
                       </td>
                       <td>
                         {item.backorderQty > 0 ? (

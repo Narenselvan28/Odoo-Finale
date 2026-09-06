@@ -39,6 +39,7 @@ const BillingDesk = () => {
   const [simulatedSeats, setSimulatedSeats] = useState(8);
   const [daysRemainingInCycle, setDaysRemainingInCycle] = useState(14);
   const [subscriptionCancelled, setSubscriptionCancelled] = useState(false);
+  const [prorationApplied, setProrationApplied] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -58,10 +59,11 @@ const BillingDesk = () => {
       const qList = qRes.data || [];
       setQuotations(qList);
       if (qList.length > 0) {
-        setSelectedQuoteId(qList[0].id);
+        const confirmed = qList.find((q) => q.status === "CONFIRMED" || q.status === "APPROVED") || qList[0];
+        setSelectedQuoteId(confirmed.id);
       }
     } catch (err) {
-      showToast({ title: "Failed to load billing data", message: err.message, type: "error" });
+      showToast({ title: "Failed to load billing", message: err.message, type: "error" });
     } finally {
       setLoading(false);
     }
@@ -91,18 +93,45 @@ const BillingDesk = () => {
   const simulatedCreditNoteRefund = (seatMonthlyRate * baseSeats * (daysRemainingInCycle / 30));
 
   const handleApplyProration = () => {
+    const invNum = `INV-PRORATE-2026-${Math.floor(100 + Math.random() * 900)}`;
+    const adjInvoice = {
+      id: Date.now(),
+      invoice_number: invNum,
+      quotation_id: selectedQuote?.id || 1,
+      customer_id: selectedQuote?.customer_id || 1,
+      amount: Math.abs(proratedAdjustment),
+      invoice_type: "SUBSCRIPTION_PRORATION",
+      status: proratedAdjustment >= 0 ? "PENDING" : "PAID",
+      due_date: new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
+    };
+
+    setInvoices((prev) => [adjInvoice, ...prev]);
+    setProrationApplied(true);
     showToast({
-      title: "Proration Adjustment Applied (Spec B7)",
-      message: `Modified subscription seat count to ${simulatedSeats}. Prorated mid-cycle adjustment: ${formatCurrencyINR(proratedAdjustment, 2)}.`,
+      title: "Proration Adjustment Invoice Issued (Spec B7)",
+      message: `Modified seat count to ${simulatedSeats}. Generated ${invNum} for ${formatCurrencyINR(Math.abs(proratedAdjustment), 2)}.`,
       type: "success",
     });
   };
 
   const handleCancelSubscription = () => {
     setSubscriptionCancelled(true);
+    const cnNum = `CN-REFUND-2026-${Math.floor(100 + Math.random() * 900)}`;
+    const creditNote = {
+      id: Date.now(),
+      invoice_number: cnNum,
+      quotation_id: selectedQuote?.id || 1,
+      customer_id: selectedQuote?.customer_id || 1,
+      amount: -simulatedCreditNoteRefund,
+      invoice_type: "CREDIT_NOTE_REFUND",
+      status: "CREDITED",
+      due_date: new Date().toISOString().split("T")[0],
+    };
+
+    setInvoices((prev) => [creditNote, ...prev]);
     showToast({
       title: "Subscription Cancelled & Credit Note Issued",
-      message: `Automatic partial refund of ${formatCurrencyINR(simulatedCreditNoteRefund, 2)} credited to customer account.`,
+      message: `Automatic partial refund ${cnNum} of ${formatCurrencyINR(simulatedCreditNoteRefund, 2)} credited to ledger.`,
       type: "info",
     });
   };
@@ -357,16 +386,39 @@ const BillingDesk = () => {
               </div>
             </div>
 
-            <div style={{ padding: "0.75rem 1.25rem 1.25rem 1.25rem", display: "flex", gap: "0.75rem", borderTop: "1px solid var(--border-light)" }}>
+            {/* Proration Status Feedback */}
+            {prorationApplied && (
+              <div style={{ margin: "0 1.25rem", padding: "0.75rem 1rem", backgroundColor: "rgba(16, 185, 129, 0.08)", border: "1px solid var(--color-success)", borderRadius: "var(--radius-sm)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-success)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <CheckCircle2 size={16} /> Proration Adjustment Applied to Contract · Mid-cycle invoice generated!
+                </span>
+                <button onClick={() => setActiveTab("invoices")} className="btn btn-sm btn-ghost" style={{ fontSize: "0.75rem", color: "var(--color-success)" }}>
+                  View in Invoices List →
+                </button>
+              </div>
+            )}
+
+            {subscriptionCancelled && (
+              <div style={{ margin: "0 1.25rem", padding: "0.75rem 1rem", backgroundColor: "rgba(239, 68, 68, 0.08)", border: "1px solid var(--color-danger)", borderRadius: "var(--radius-sm)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-danger)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <XCircle size={16} /> Subscription Terminated · Refund Credit Note logged to customer ledger!
+                </span>
+                <button onClick={() => setActiveTab("invoices")} className="btn btn-sm btn-ghost" style={{ fontSize: "0.75rem", color: "var(--color-danger)" }}>
+                  View Credit Note →
+                </button>
+              </div>
+            )}
+
+            <div style={{ padding: "1rem 1.25rem", display: "flex", gap: "0.75rem", borderTop: "1px solid var(--border-light)" }}>
               <button onClick={handleApplyProration} className="btn btn-primary btn-sm">
-                <Check size={14} /> Commit Prorated Seat Adjustment
+                <Check size={14} /> {prorationApplied ? "Re-calculate & Update Proration" : "Commit Prorated Seat Adjustment"}
               </button>
               <button
                 onClick={handleCancelSubscription}
                 className="btn btn-danger btn-sm"
                 disabled={subscriptionCancelled}
               >
-                <XCircle size={14} /> {subscriptionCancelled ? "Subscription Terminated" : "Cancel & Trigger Credit Note Refund"}
+                <XCircle size={14} /> {subscriptionCancelled ? "Subscription Terminated ✓" : "Cancel & Trigger Credit Note Refund"}
               </button>
             </div>
           </div>

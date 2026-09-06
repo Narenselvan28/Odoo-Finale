@@ -62,7 +62,14 @@ const DealIntelligence = () => {
     fetchData();
   }, []);
 
+  const [nudgedQuotes, setNudgedQuotes] = useState({});
+  const [escalatedAlerts, setEscalatedAlerts] = useState({});
+
   const handleSendNudge = (quoteId) => {
+    setNudgedQuotes((prev) => ({ ...prev, [quoteId]: true }));
+    setAlerts((prev) =>
+      prev.map((a) => (a.quotation_id === quoteId ? { ...a, status: "NUDGED_CLIENT_SENT" } : a))
+    );
     showToast({
       title: `Automated Nudge Dispatched!`,
       message: `Commercial re-engagement email and expiring term reminder sent to client for Quote #${quoteId}.`,
@@ -81,6 +88,7 @@ const DealIntelligence = () => {
   };
 
   const handleEscalateDirector = (alertId, quoteId) => {
+    setEscalatedAlerts((prev) => ({ ...prev, [alertId]: true }));
     showToast({
       title: `Escalated to Sales Director`,
       message: `Alert #${alertId} on Quote #${quoteId} flagged for expedited executive intervention.`,
@@ -89,6 +97,21 @@ const DealIntelligence = () => {
     setAlerts((prev) =>
       prev.map((a) => (a.id === alertId ? { ...a, severity: "ESCALATED", status: "ESCALATED_L1" } : a))
     );
+  };
+
+  const handleLockRepAutonomy = (repId, repName) => {
+    setRepAnomalies((prev) =>
+      prev.map((r) =>
+        r.id === repId
+          ? { ...r, status: "AUTONOMY_LOCKED_10%", avgDiscount: 10.0, ratio: 0.87 }
+          : r
+      )
+    );
+    showToast({
+      title: "Mandatory Dual-Signoff Enforced",
+      message: `Locked discount autonomy for ${repName}. Future submissions will require Director + Finance approval.`,
+      type: "warning",
+    });
   };
 
   const handleApplySweetener = (quoteId) => {
@@ -338,19 +361,26 @@ const DealIntelligence = () => {
                       <div style={{ display: "flex", gap: "0.35rem" }}>
                         <button
                           onClick={() => handleSendNudge(a.quotation_id)}
-                          className="btn btn-sm btn-secondary"
+                          disabled={nudgedQuotes[a.quotation_id]}
+                          className={`btn btn-sm ${nudgedQuotes[a.quotation_id] ? "btn-success" : "btn-secondary"}`}
                           style={{ fontSize: "0.7rem", padding: "3px 8px" }}
                           title="Send customer re-engagement nudge"
                         >
-                          <Send size={11} /> Nudge
+                          <Send size={11} /> {nudgedQuotes[a.quotation_id] ? "Nudged ✓" : "Nudge"}
                         </button>
                         <button
                           onClick={() => handleEscalateDirector(a.id, a.quotation_id)}
+                          disabled={escalatedAlerts[a.id]}
                           className="btn btn-sm btn-secondary"
-                          style={{ fontSize: "0.7rem", padding: "3px 8px", color: "var(--color-danger)", borderColor: "var(--color-danger-border)" }}
+                          style={{
+                            fontSize: "0.7rem",
+                            padding: "3px 8px",
+                            color: escalatedAlerts[a.id] ? "var(--color-text-muted)" : "var(--color-danger)",
+                            borderColor: "var(--color-danger-border)",
+                          }}
                           title="Escalate to L1/L2 Governance Director"
                         >
-                          <ShieldAlert size={11} /> Escalate
+                          <ShieldAlert size={11} /> {escalatedAlerts[a.id] ? "Escalated ✓" : "Escalate"}
                         </button>
                         <Link
                           to={`/portal/${a.quotation_id}`}
@@ -421,7 +451,11 @@ const DealIntelligence = () => {
                         {r.ratio}x
                       </td>
                       <td>
-                        {r.status === "CRITICAL_ANOMALY" ? (
+                        {r.status === "AUTONOMY_LOCKED_10%" ? (
+                          <span className="badge badge-draft" style={{ fontWeight: 700, color: "var(--color-info)" }}>
+                            Autonomy Capped (10% Max)
+                          </span>
+                        ) : r.status === "CRITICAL_ANOMALY" ? (
                           <span className="badge badge-rejected"><AlertTriangle size={12} /> 1.95x Anomaly Flag</span>
                         ) : r.status === "ELEVATED_RISK" ? (
                           <span className="badge badge-pending"><Clock size={12} /> Elevated (1.58x)</span>
@@ -432,17 +466,17 @@ const DealIntelligence = () => {
                       <td>
                         {isAnomaly ? (
                           <button
-                            onClick={() => {
-                              showToast({
-                                title: "Mandatory Dual-Signoff Enforced",
-                                message: `Locked discount autonomy for ${r.rep}. Future submissions will require Director + Finance approval.`,
-                                type: "warning",
-                              });
-                            }}
+                            onClick={() => handleLockRepAutonomy(r.id, r.rep)}
+                            disabled={r.status === "AUTONOMY_LOCKED_10%"}
                             className="btn btn-sm btn-secondary"
-                            style={{ fontSize: "0.7rem", padding: "3px 8px", color: "var(--color-danger)", borderColor: "var(--color-danger-border)" }}
+                            style={{
+                              fontSize: "0.7rem",
+                              padding: "3px 8px",
+                              color: r.status === "AUTONOMY_LOCKED_10%" ? "var(--color-text-muted)" : "var(--color-danger)",
+                              borderColor: "var(--color-danger-border)",
+                            }}
                           >
-                            Lock Max 10% Autonomy
+                            {r.status === "AUTONOMY_LOCKED_10%" ? "Locked (10% Max) ✓" : "Lock Max 10% Autonomy"}
                           </button>
                         ) : (
                           <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Autonomy intact</span>
