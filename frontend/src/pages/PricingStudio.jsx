@@ -585,6 +585,15 @@ const PricingStudio = () => {
     });
   };
 
+  // B7: Hybrid Billing & Subscription Calculations
+  const capexItems = calculatedItems.filter((i) => i.product_type !== "SUBSCRIPTION");
+  const opexItems = calculatedItems.filter((i) => i.product_type === "SUBSCRIPTION");
+
+  const capexTotal = capexItems.reduce((acc, i) => acc + i.net, 0);
+  const monthlyOpex = opexItems.reduce((acc, i) => acc + i.net, 0);
+  const annualRecurringRevenue = monthlyOpex * 12;
+  const totalContractValue = capexTotal + monthlyOpex * contractTermMonths;
+
   // Save Quotation Handler
   const handleSaveQuotation = async (status = "DRAFT") => {
     if (!selectedCustomerId) {
