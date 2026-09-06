@@ -229,9 +229,14 @@ const CustomerPortal = () => {
           <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
             The requested quotation reference #{id} could not be retrieved or has expired.
           </p>
-          <Link to="/login" className="btn btn-primary btn-sm">
-            Back to Sales Portal
-          </Link>
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+            <Link to="/quotations" className="btn btn-primary btn-sm">
+              View All Quotations
+            </Link>
+            <Link to="/dashboard" className="btn btn-secondary btn-sm">
+              Back to Dashboard
+            </Link>
+          </div>
         </div>
       </div>
     );

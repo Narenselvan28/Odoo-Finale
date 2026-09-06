@@ -22,7 +22,7 @@ import {
 
 const DEMO_STEPS = [
   { id: 1, label: "1. CPQ Studio", path: "/cpq", icon: Calculator, desc: "Build quote with dynamic margin & tier pricing" },
-  { id: 2, label: "2. Customer Portal", path: "/portal/226", icon: Globe, desc: "Live 35% counter-offer concession reflection" },
+  { id: 2, label: "2. Customer Portal", path: "/portal/1", icon: Globe, desc: "Live 35% counter-offer concession reflection" },
   { id: 3, label: "3. Approvals Desk", path: "/approvals", icon: CheckSquare, desc: "Director-level governance & audit trail" },
   { id: 4, label: "4. Warehouse Depots", path: "/inventory", icon: Warehouse, desc: "Multi-depot line-item fulfillment split" },
   { id: 5, label: "5. Dual-Engine Billing", path: "/billing", icon: Receipt, desc: "Milestone invoices & mid-cycle subscription proration" },
