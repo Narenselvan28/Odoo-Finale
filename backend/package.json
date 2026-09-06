@@ -10,6 +10,7 @@
     "db:sync": "node src/config/syncDb.js",
     "db:seed": "node src/config/seed.js",
     "db:seed:excel": "node src/scripts/seedFromExcel.js",
+    "db:provision-customers": "node src/scripts/provisionCustomerUsers.js",
     "db:normalize": "node src/scripts/normalizeDatabaseValues.js",
     "db:export-excel": "node src/scripts/exportSeedToExcel.js"
   },

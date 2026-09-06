@@ -22,10 +22,12 @@ import {
   Command,
   Clock,
 } from "lucide-react";
+import UserProfileModal from "../common/UserProfileModal";
 
 const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
   const { user, logout } = useAuth();
   const { openShortcuts } = useKeyboardShortcuts();
+  const [profileOpen, setProfileOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -114,8 +116,9 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
         </div>
 
         <div className="header-actions">
-          {/* User Persona Chip */}
+          {/* User Persona Chip (Clickable for Profile) */}
           <div
+            onClick={() => setProfileOpen(true)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -126,12 +129,28 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
               borderRadius: "var(--radius-sm)",
               fontSize: "11px",
               fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.15s ease",
             }}
+            title="Click to view & edit your User Profile"
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--orange)")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
           >
             <User size={13} color="var(--orange)" />
             <span style={{ color: "var(--text)" }}>{user?.name || "User"}</span>
             <span className="badge badge-orange">{roleMeta.label}</span>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setProfileOpen(true)}
+            className="btn btn-ghost btn-sm"
+            style={{ display: "inline-flex", gap: "5px", alignItems: "center", fontSize: "11.5px" }}
+            title="Open User Profile & Account Details"
+          >
+            <User size={12} color="var(--orange)" />
+            <span>Profile</span>
+          </button>
 
           {/* Inactivity Security Badge */}
           <div
@@ -250,6 +269,9 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
       <main style={{ minHeight: "520px", flex: 1, paddingBottom: "24px" }}>
         {children}
       </main>
+
+      {/* ===== USER PROFILE MODAL (Accessible by all users) ===== */}
+      <UserProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 };

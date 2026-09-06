@@ -81,7 +81,7 @@ const sqlInjectionMiddleware = (req, res, next) => {
         // Exclude known non-ID action keywords and sub-resource routes
         const actionKeywords = [
           "public", "items", "plans", "evaluate-risk", "status",
-          "negotiate", "health", "register", "login", "me"
+          "negotiate", "health", "register", "login", "me", "profile"
         ];
         if (!actionKeywords.includes(seg) && !/^[0-9]+$/.test(seg)) {
           console.warn(`🚨 [SECURITY GATEWAY] Invalid ID or SQL injection attempt in path segment '${seg}' [${req.method} ${req.originalUrl}]`);

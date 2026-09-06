@@ -44,24 +44,44 @@ const UsersAdmin = () => {
     fetchData();
   }, []);
 
-  const filteredUsers = users.filter(
-    (u) =>
+  const [roleFilter, setRoleFilter] = useState("ALL"); // "ALL" | "OPERATOR" | "CUSTOMER"
+
+  const operatorsCount = users.filter((u) => u.role !== "customer").length;
+  const customersCount = users.filter((u) => u.role === "customer").length;
+
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch =
       u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.role?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      u.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.Customer?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+    if (roleFilter === "OPERATOR") return u.role !== "customer";
+    if (roleFilter === "CUSTOMER") return u.role === "customer";
+    return true;
+  });
 
   return (
-    <AppLayout pageTitle="Administration, Access Control & Audit Log">
+    <AppLayout pageTitle="Administration, Access Control & User Directory">
       {/* Metric Cards */}
       <div className="metric-grid">
         <div className="metric-card">
           <div className="metric-card-top">
-            <span>Registered Operators</span>
+            <span>Enterprise Operators</span>
             <Users size={16} color="var(--color-accent)" />
           </div>
-          <div className="metric-value tnum">{users.length}</div>
-          <div className="metric-sub">Enterprise credentials</div>
+          <div className="metric-value tnum">{operatorsCount}</div>
+          <div className="metric-sub">Internal sales & operations</div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-card-top">
+            <span>Customer Logins</span>
+            <Users size={16} color="#7c3aed" />
+          </div>
+          <div className="metric-value tnum">{customersCount}</div>
+          <div className="metric-sub">Client organization credentials</div>
         </div>
 
         <div className="metric-card">
@@ -108,17 +128,45 @@ const UsersAdmin = () => {
       {/* Users */}
       {activeTab === "users" && (
         <div className="data-card">
-          <div className="data-card-header">
-            <div style={{ position: "relative", width: "300px" }}>
+          <div className="data-card-header" style={{ flexWrap: "wrap", gap: "0.75rem" }}>
+            <div style={{ position: "relative", width: "280px" }}>
               <Search size={15} style={{ position: "absolute", left: "10px", top: "10px", color: "var(--color-text-muted)" }} />
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Search users or companies..."
                 className="input input-sm"
-                style={{ paddingLeft: "32px" }}
+                style={{ paddingLeft: "32px", width: "100%" }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+            </div>
+
+            {/* Role Filter Pills */}
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("ALL")}
+                className={`btn btn-sm ${roleFilter === "ALL" ? "btn-primary" : "btn-secondary"}`}
+                style={{ fontSize: "0.75rem", padding: "4px 10px" }}
+              >
+                All Accounts ({users.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("OPERATOR")}
+                className={`btn btn-sm ${roleFilter === "OPERATOR" ? "btn-primary" : "btn-secondary"}`}
+                style={{ fontSize: "0.75rem", padding: "4px 10px" }}
+              >
+                Operators ({operatorsCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("CUSTOMER")}
+                className={`btn btn-sm ${roleFilter === "CUSTOMER" ? "btn-primary" : "btn-secondary"}`}
+                style={{ fontSize: "0.75rem", padding: "4px 10px", color: roleFilter === "CUSTOMER" ? "#fff" : "#7c3aed" }}
+              >
+                Customer Logins ({customersCount})
+              </button>
             </div>
           </div>
 
@@ -130,19 +178,33 @@ const UsersAdmin = () => {
                   <th>Name & Identity</th>
                   <th>Email</th>
                   <th>Role</th>
+                  <th>Associated Organization</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="5" style={{ textAlign: "center", padding: "2rem" }}>Loading team...</td></tr>
+                  <tr><td colSpan="6" style={{ textAlign: "center", padding: "2rem" }}>Loading team directory...</td></tr>
                 ) : filteredUsers.slice(0, 50).map((u) => (
                   <tr key={u.id}>
                     <td className="tnum" style={{ fontWeight: 600 }}>#{u.id}</td>
                     <td style={{ fontWeight: 600 }}>{u.name}</td>
                     <td style={{ color: "var(--color-text-secondary)" }}>{u.email}</td>
                     <td>
-                      <span className="badge badge-enterprise">{u.role || "Operator"}</span>
+                      <span
+                        className="badge"
+                        style={{
+                          backgroundColor: u.role === "customer" ? "rgba(124, 58, 237, 0.1)" : "var(--brand-pale)",
+                          color: u.role === "customer" ? "#7c3aed" : "var(--brand)",
+                          fontWeight: 700,
+                          fontSize: "0.7rem",
+                        }}
+                      >
+                        {u.role === "customer" ? "Customer" : u.role || "Operator"}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: "0.8125rem", color: u.Customer ? "var(--text-heading)" : "var(--text-muted)" }}>
+                      {u.Customer ? u.Customer.name : "DealFlow 360 Internal"}
                     </td>
                     <td>
                       {u.is_active !== false && u.isActive !== false ? (
