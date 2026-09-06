@@ -76,7 +76,7 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
     { label: "Invoices & Billing", path: "/billing", icon: Receipt },
     { label: "Deal Telemetry", path: "/intelligence", icon: Activity },
     { label: "Reports & Exports", path: "/reporting", icon: BarChart3 },
-    { label: "Admin & Audit", path: "/users", icon: ShieldCheck },
+    { label: "Users & Profile", path: "/users", icon: Users },
   ];
 
   // Category determination for breadcrumbs & page header
@@ -96,8 +96,8 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
     if (path.includes("/intelligence") || path.includes("/reporting")) {
       return "Executive Telemetry & Intelligence";
     }
-    if (path.includes("/users")) {
-      return "System Governance & Audit";
+    if (path.includes("/users") || path.includes("/profile")) {
+      return "User Directory & Account Details";
     }
     return "Enterprise Command Center";
   };

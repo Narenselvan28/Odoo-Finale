@@ -153,6 +153,14 @@ function App() {
                     </PrivateRoute>
                   }
                 />
+                <Route
+                  path="/profile"
+                  element={
+                    <PrivateRoute>
+                      <UsersAdmin />
+                    </PrivateRoute>
+                  }
+                />
 
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
