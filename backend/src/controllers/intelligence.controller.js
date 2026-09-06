@@ -373,6 +373,21 @@ const confirmChatAction = async (req, res) => {
       const proposedQuantity = action_payload.quantity;
 
       if (proposedDiscount !== undefined) {
+        const discNum = parseFloat(proposedDiscount);
+        const currentAvgDiscount = quotation.QuotationItems && quotation.QuotationItems.length > 0
+          ? quotation.QuotationItems.reduce((s, i) => s + parseFloat(i.discount_percent || 0), 0) / quotation.QuotationItems.length
+          : 0;
+        const maxAllowed = currentAvgDiscount > 0
+          ? Math.min(85.0, parseFloat((currentAvgDiscount * 1.85).toFixed(1)))
+          : 25.0;
+
+        if (discNum > 85.0 || (currentAvgDiscount > 0 && discNum > maxAllowed)) {
+          return res.status(400).json({
+            success: false,
+            message: `Policy Violation: Discount (${discNum}%) exceeds the allowed limit (+85% cap = ${maxAllowed}%). Mutation disallowed.`,
+          });
+        }
+
         // Update line items
         if (quotation.QuotationItems && quotation.QuotationItems.length > 0) {
           for (const item of quotation.QuotationItems) {

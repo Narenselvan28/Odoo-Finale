@@ -103,6 +103,17 @@ const create = async (req, res) => {
       quotationData.status = "PENDING_APPROVAL";
     }
 
+    // Validate 85% discount ceiling on items
+    if (items && items.length > 0) {
+      for (const item of items) {
+        if (parseFloat(item.discount_percent || 0) > 85.0) {
+          return res.status(400).json({
+            message: `Policy Violation: Line item discount (${item.discount_percent}%) exceeds maximum allowable limit of 85%.`,
+          });
+        }
+      }
+    }
+
     const quotation = await Quotation.create(quotationData);
 
     // Create Line Items if provided
@@ -263,6 +274,33 @@ const customerNegotiate = async (req, res) => {
     }
 
     if (action === "SUBMIT_REQUEST") {
+      const currentAvgDiscount = quotation.QuotationItems && quotation.QuotationItems.length > 0
+        ? quotation.QuotationItems.reduce((s, i) => s + parseFloat(i.discount_percent || 0), 0) / quotation.QuotationItems.length
+        : 0;
+
+      const maxAllowed = currentAvgDiscount > 0
+        ? Math.min(85.0, parseFloat((currentAvgDiscount * 1.85).toFixed(1)))
+        : 25.0;
+
+      const numericCounter = parseFloat(counter_discount || 0);
+
+      // Condition: Warn and disallow quoting > 85% absolute or > 85% relative increase over current discount
+      if (numericCounter > 85.0) {
+        return res.status(400).json({
+          message: "Discounts exceeding 85% are strictly prohibited by enterprise policy.",
+          disallowed: true,
+          max_allowed: 85.0,
+        });
+      }
+
+      if (currentAvgDiscount > 0 && numericCounter > maxAllowed) {
+        return res.status(400).json({
+          message: `Policy Violation: Counter-discount (${numericCounter}%) cannot exceed +85% of current discount (${currentAvgDiscount}%). Maximum permitted is ${maxAllowed}%.`,
+          disallowed: true,
+          max_allowed: maxAllowed,
+        });
+      }
+
       // Record customer counter-discount negotiation request
       await Negotiation.create({
         quotation_id: quotation.id,

@@ -78,12 +78,31 @@ const CustomerPortal = () => {
   );
   const currentTotal = Number(quoteData?.total_amount) || grossTotal;
 
+  const currentAvgDiscount = items.length > 0
+    ? items.reduce((acc, i) => acc + (Number(i.discount_percent) || 0), 0) / items.length
+    : 0;
+
+  // Maximum allowed negotiation discount: capped at +85% of current discount or 85% absolute ceiling
+  const maxAllowedDiscount = currentAvgDiscount > 0
+    ? Math.min(85.0, Number((currentAvgDiscount * 1.85).toFixed(1)))
+    : 25.0;
+
+  const isDiscountOverLimit = Number(counterDiscount) > 85.0 || (currentAvgDiscount > 0 && Number(counterDiscount) > maxAllowedDiscount);
+
   // Proposed counter total calculation
   const proposedCounterTotal = grossTotal * (1 - counterDiscount / 100);
   const proposedSavings = grossTotal - proposedCounterTotal;
 
   const handleNegotiateSubmit = async (e) => {
     e.preventDefault();
+    if (isDiscountOverLimit) {
+      showToast({
+        title: "Discount Policy Violation",
+        message: `Discounts cannot exceed +85% of current discount (Maximum allowed: ${maxAllowedDiscount}%).`,
+        type: "error",
+      });
+      return;
+    }
     try {
       setSubmitting(true);
       const payload = {
@@ -494,30 +513,64 @@ const CustomerPortal = () => {
               {/* Counter Discount Proposal Form */}
               <form onSubmit={handleNegotiateSubmit}>
                 <div style={{ marginBottom: "1rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                     <label className="form-label" style={{ marginBottom: 0 }}>
                       Requested Target Discount %
                     </label>
-                    <span className="tnum" style={{ fontWeight: 800, color: "var(--orange)" }}>
-                      {counterDiscount}%
-                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span className="tnum" style={{ fontWeight: 800, color: isDiscountOverLimit ? "#dc2626" : "var(--orange)" }}>
+                        {counterDiscount}%
+                      </span>
+                      {isDiscountOverLimit && (
+                        <span style={{ fontSize: "0.6875rem", background: "#fee2e2", color: "#dc2626", padding: "1px 6px", borderRadius: "4px", fontWeight: 700 }}>
+                          BLOCKED
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <input
                     type="range"
-                    min="5"
-                    max="35"
+                    min="1"
+                    max={Math.max(35, Math.ceil(maxAllowedDiscount))}
                     step="1"
                     value={counterDiscount}
                     onChange={(e) => setCounterDiscount(Number(e.target.value))}
-                    style={{ width: "100%", cursor: "pointer", accentColor: "var(--orange)" }}
+                    style={{ width: "100%", cursor: "pointer", accentColor: isDiscountOverLimit ? "#dc2626" : "var(--orange)" }}
                   />
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.6875rem", color: "var(--text-muted)" }}>
-                    <span>5% (Standard)</span>
-                    <span>15% (Tier Limit)</span>
-                    <span>25%+ (Director Esc.)</span>
+                    <span>Current: {currentAvgDiscount.toFixed(1)}%</span>
+                    <span>Max Allowed: <strong>{maxAllowedDiscount}%</strong></span>
+                    <span>Hard Cap: 85%</span>
                   </div>
                 </div>
+
+                {/* 85% Discount Policy Warning Alert */}
+                {isDiscountOverLimit && (
+                  <div
+                    style={{
+                      backgroundColor: "#fef2f2",
+                      border: "1px solid #f87171",
+                      borderRadius: "var(--radius-sm)",
+                      padding: "0.75rem 1rem",
+                      marginBottom: "1rem",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "0.5rem",
+                      color: "#991b1b",
+                      fontSize: "0.75rem",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <AlertTriangle size={16} color="#dc2626" style={{ flexShrink: 0, marginTop: "2px" }} />
+                    <div>
+                      <strong>Commercial Policy Restriction</strong>
+                      <div>
+                        Counter-discount cannot exceed +85% of the current quoted discount (Maximum allowed: <strong>{maxAllowedDiscount}%</strong>). Submitting {counterDiscount}% is disallowed.
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Dynamic Recalculated Target Total */}
                 <div
@@ -549,7 +602,7 @@ const CustomerPortal = () => {
                     }}
                   >
                     <span>Your Proposed Total:</span>
-                    <span className="tnum" style={{ color: "var(--orange)" }}>
+                    <span className="tnum" style={{ color: isDiscountOverLimit ? "#dc2626" : "var(--orange)" }}>
                       ₹{proposedCounterTotal.toFixed(2)}
                     </span>
                   </div>
@@ -570,12 +623,19 @@ const CustomerPortal = () => {
 
                 <button
                   type="submit"
-                  disabled={submitting || quoteData.status === "CONFIRMED"}
+                  disabled={submitting || quoteData.status === "CONFIRMED" || isDiscountOverLimit}
                   className="btn btn-primary w-full"
-                  style={{ width: "100%", justifyContent: "center" }}
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    opacity: isDiscountOverLimit ? 0.6 : 1,
+                    cursor: isDiscountOverLimit ? "not-allowed" : "pointer",
+                  }}
                 >
                   <Send size={15} />
-                  <span>Submit Counter-Proposal (Spec B8)</span>
+                  <span>
+                    {isDiscountOverLimit ? `Discount Exceeds +85% Cap (Max ${maxAllowedDiscount}%)` : "Submit Counter-Proposal (Spec B8)"}
+                  </span>
                 </button>
               </form>
 

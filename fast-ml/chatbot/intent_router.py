@@ -286,6 +286,35 @@ class IntentRouter:
         requested_disc = entities.get("discount_percent").value if "discount_percent" in entities else (current_disc + 3.0)
         requested_disc = float(requested_disc)
 
+        # ── 85% DISCOUNT CONDITION GUARDRAIL ──────────────────────────────────
+        # Disallow quoting more than 85% absolute OR more than +85% of the current discount
+        max_allowed_disc = min(85.0, round(current_disc * 1.85, 1)) if current_disc > 0 else 25.0
+
+        if requested_disc > 85.0 or (current_disc > 0 and requested_disc > max_allowed_disc):
+            exceeded_reason = f"exceeds the 85% hard ceiling" if requested_disc > 85.0 else f"exceeds +85% of your current discount ({current_disc:.1f}%)"
+            msg = (
+                f"⚠️ **Commercial Policy Warning**: A discount of **{requested_disc:.1f}%** cannot be quoted because it {exceeded_reason}.\n\n"
+                f"The maximum allowable counter-discount for this deal is **{max_allowed_disc:.1f}%**."
+            )
+            sections = [
+                ResponseSection(label="Current Discount", value=f"{current_disc:.1f}%"),
+                ResponseSection(label="Requested Discount", value=f"{requested_disc:.1f}%", status="critical"),
+                ResponseSection(label="Maximum Allowed Cap (+85%)", value=f"{max_allowed_disc:.1f}%", status="warning"),
+                ResponseSection(label="Policy Status", value="DISALLOWED / BLOCKED", status="critical")
+            ]
+            actions = [
+                ChatAction(id="req_max_allowed", label=f"Apply Maximum Allowed ({max_allowed_disc:.1f}%)", type="QUICK_REPLY"),
+                ChatAction(id="act_better_deal", label="💡 Explore Feasible Scenarios", type="QUICK_REPLY"),
+                ChatAction(id="keep_current", label=f"Keep Current ({current_disc:.1f}%)", type="QUICK_REPLY")
+            ]
+            resp = StructuredResponse(
+                type="ERROR",
+                message=msg,
+                sections=sections,
+                warnings=[f"Discounts above {max_allowed_disc:.1f}% are blocked by governance policy."]
+            )
+            return resp, actions, ConversationState.COMPLETED, None
+
         sim_payload = {
             "deal": copy.deepcopy(deal),
             "changes": {"discount_percent": requested_disc}
@@ -350,25 +379,30 @@ class IntentRouter:
         simulated = sim_data["simulated"]
         rules = sim_data["rules"]
 
+        max_allowed_disc = min(85.0, round(current_disc * 1.85, 1)) if current_disc > 0 else 25.0
+        is_exceeded = target_disc > 85.0 or (current_disc > 0 and target_disc > max_allowed_disc)
+
         sections = [
             ResponseSection(label="Discount", current=f"{current_disc:.1f}%", proposed=f"{target_disc:.1f}%"),
             ResponseSection(label="Estimated Margin", current=f"{baseline['margin_percent']:.1f}%", proposed=f"{simulated['margin_percent']:.1f}%"),
             ResponseSection(
-                label="Governance & Approval",
-                value=f"{rules.get('approval_level', 'Sales Manager')} Required" if rules.get("approval_required") else "Auto-Approved",
-                status="warning" if rules.get("approval_required") else "normal"
+                label="Governance & Policy",
+                value="DISALLOWED (>85% Cap)" if is_exceeded else (f"{rules.get('approval_level', 'Sales Manager')} Required" if rules.get("approval_required") else "Auto-Approved"),
+                status="critical" if is_exceeded else ("warning" if rules.get("approval_required") else "normal")
             ),
             ResponseSection(label="Delivery Lead Time", value="4 business days")
         ]
 
+        warnings_list = [f"⚠️ Requested discount ({target_disc:.1f}%) exceeds the +85% policy limit (Max allowed: {max_allowed_disc:.1f}%). Submitting this quote is disallowed."] if is_exceeded else []
+
         resp = ResponseBuilder.build_scenario_result(
-            message=f"Simulation results for requesting **{target_disc:.1f}% discount** on your deal:",
+            message=f"Simulation results for requesting **{target_disc:.1f}% discount** on your deal:" if not is_exceeded else f"⚠️ **Policy Warning**: Simulating **{target_disc:.1f}% discount** exceeds the allowable limit (+85% cap = **{max_allowed_disc:.1f}%**).",
             sections=sections,
-            warnings=[]
+            warnings=warnings_list
         )
 
         actions = [
-            ChatAction(id="submit_disc_req", label=f"Proceed with {target_disc:.1f}% Request", type="QUICK_REPLY"),
+            ChatAction(id="req_max_allowed", label=f"Apply Allowed Cap ({max_allowed_disc:.1f}%)", type="QUICK_REPLY") if is_exceeded else ChatAction(id="submit_disc_req", label=f"Proceed with {target_disc:.1f}% Request", type="QUICK_REPLY"),
             ChatAction(id="act_better_deal", label="💡 Explore Other Better Deals", type="QUICK_REPLY")
         ]
         return resp, actions, ConversationState.COMPLETED, None

@@ -150,6 +150,23 @@ class RuleEngineAdapter:
             "message": "Fulfillment delivery SLA is achievable." if delivery_sla_met else "Fulfillment delivery SLA is at risk."
         })
 
+        # Rule 8: 85% Max Discount Condition & Relative Ceiling
+        baseline_disc = float(deal_data.get("current_discount_percent", deal_data.get("discount_percent", 0.0)))
+        max_relative_cap = min(85.0, round(baseline_disc * 1.85, 1)) if baseline_disc > 0 else 85.0
+        passed_85_rule = discount_pct <= 85.0 and (baseline_disc == 0 or discount_pct <= max_relative_cap)
+
+        rule_results.append({
+            "rule": "discount_85_percent_limit",
+            "passed": passed_85_rule,
+            "threshold": max_relative_cap,
+            "actual_value": discount_pct,
+            "message": "Discount complies with 85% relative/hard policy limits." if passed_85_rule else f"Policy Warning: Discount ({discount_pct}%) exceeds allowed limit (+85% cap: {max_relative_cap}%)."
+        })
+        if not passed_85_rule:
+            approval_required = True
+            approval_reasons.append(f"Discount exceeds 85% policy limit (Max allowed: {max_relative_cap}%)")
+            approval_level = "EXECUTIVE"
+
         return {
             "approval_required": approval_required,
             "approval_level": approval_level,
