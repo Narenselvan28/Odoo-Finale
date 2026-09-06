@@ -650,6 +650,39 @@ const PricingStudio = () => {
     }
   };
 
+  // Contextual CPQ Keyboard Shortcuts: Ctrl+S (Save), Alt+A (Add item), Alt+P (Open Portal)
+  useEffect(() => {
+    const handleCPQKeys = (e) => {
+      // Ctrl+S or Cmd+S -> Save Quotation
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        const nextStatus = riskAnalysis?.requiresApproval ? "PENDING_APPROVAL" : "CONFIRMED";
+        handleSaveQuotation(nextStatus);
+        return;
+      }
+
+      // Alt+A -> Add Item Line
+      if (e.altKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        handleAddItem();
+        showToast({ title: "Line Item Added", message: "Appended new product item to quotation.", type: "info" });
+        return;
+      }
+
+      // Alt+P -> Open Negotiation Portal if loaded
+      if (e.altKey && e.key.toLowerCase() === "p") {
+        if (loadedQuoteId) {
+          e.preventDefault();
+          window.open(`/portal/${loadedQuoteId}`, "_blank");
+          showToast({ title: "Negotiation Portal", message: "Launched customer portal in new tab.", type: "info" });
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleCPQKeys);
+    return () => window.removeEventListener("keydown", handleCPQKeys);
+  }, [handleSaveQuotation, handleAddItem, loadedQuoteId, riskAnalysis, showToast]);
+
   return (
     <AppLayout
       pageTitle={

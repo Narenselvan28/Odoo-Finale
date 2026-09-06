@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useKeyboardShortcuts } from "../../context/KeyboardShortcutsContext";
 import {
   LayoutDashboard,
   Calculator,
@@ -18,10 +19,13 @@ import {
   BarChart3,
   User,
   RefreshCw,
+  Command,
+  Clock,
 } from "lucide-react";
 
 const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
   const { user, logout } = useAuth();
+  const { openShortcuts } = useKeyboardShortcuts();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -128,6 +132,66 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
             <span style={{ color: "var(--text)" }}>{user?.name || "User"}</span>
             <span className="badge badge-orange">{roleMeta.label}</span>
           </div>
+
+          {/* Inactivity Security Badge */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 8px",
+              background: "var(--bg-secondary)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-sm)",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              cursor: "help",
+            }}
+            title="Enterprise Security Policy: 15-minute inactivity session termination active."
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor: "#10b981",
+                display: "inline-block",
+                boxShadow: "0 0 4px #10b981",
+              }}
+            />
+            <span style={{ fontWeight: 600, color: "var(--text-secondary)" }}>15m Idle Guard</span>
+          </div>
+
+          {/* Keyboard Shortcuts Palette Launcher */}
+          <button
+            type="button"
+            onClick={openShortcuts}
+            className="btn btn-ghost btn-sm"
+            style={{
+              display: "inline-flex",
+              gap: "6px",
+              alignItems: "center",
+              fontSize: "11.5px",
+              padding: "4px 8px",
+              border: "1px solid var(--border-light)",
+            }}
+            title="Open Keyboard Shortcuts (Press ⌘K or ?)"
+          >
+            <Command size={12} color="var(--orange)" />
+            <span style={{ fontWeight: 600 }}>Shortcuts</span>
+            <kbd
+              style={{
+                fontSize: "9.5px",
+                padding: "1px 4px",
+                backgroundColor: "var(--border-light)",
+                borderRadius: "3px",
+                color: "var(--text)",
+                fontWeight: 700,
+              }}
+            >
+              ⌘K
+            </kbd>
+          </button>
 
           <button
             onClick={() => window.location.reload()}

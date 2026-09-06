@@ -2,6 +2,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
+import { KeyboardShortcutsProvider } from "./context/KeyboardShortcutsContext";
+import KeyboardShortcutsModal from "./components/common/KeyboardShortcutsModal";
+import SessionTimeoutMonitor from "./components/common/SessionTimeoutMonitor";
+import ShowcaseBar from "./components/common/ShowcaseBar";
 import PrivateRoute from "./components/PrivateRoute";
 
 // Pages
@@ -27,120 +31,125 @@ function App() {
       <ToastProvider>
         <ConfirmProvider>
           <Router>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              {/* Customer-Facing Live Negotiation Portal (Spec B8 - Publicly Accessible) */}
-              <Route path="/portal/:id" element={<CustomerPortal />} />
+            <KeyboardShortcutsProvider>
+              <KeyboardShortcutsModal />
+              <SessionTimeoutMonitor />
+              <ShowcaseBar />
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                {/* Customer-Facing Live Negotiation Portal (Spec B8 - Publicly Accessible) */}
+                <Route path="/portal/:id" element={<CustomerPortal />} />
 
-              {/* Protected Enterprise Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/cpq"
-                element={
-                  <PrivateRoute>
-                    <PricingStudio />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/cpq/:id"
-                element={
-                  <PrivateRoute>
-                    <PricingStudio />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/quotations"
-                element={
-                  <PrivateRoute>
-                    <QuotationsList />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/pipeline"
-                element={
-                  <PrivateRoute>
-                    <PipelineKanban />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/reporting"
-                element={
-                  <PrivateRoute>
-                    <ReportingDesk />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/approvals"
-                element={
-                  <PrivateRoute>
-                    <ApprovalsDesk />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/catalog"
-                element={
-                  <PrivateRoute>
-                    <CatalogManagement />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/customers"
-                element={
-                  <PrivateRoute>
-                    <CustomersDesk />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/inventory"
-                element={
-                  <PrivateRoute>
-                    <InventoryDesk />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/billing"
-                element={
-                  <PrivateRoute>
-                    <BillingDesk />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/intelligence"
-                element={
-                  <PrivateRoute>
-                    <DealIntelligence />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/users"
-                element={
-                  <PrivateRoute>
-                    <UsersAdmin />
-                  </PrivateRoute>
-                }
-              />
+                {/* Protected Enterprise Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <PrivateRoute>
+                      <Dashboard />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/cpq"
+                  element={
+                    <PrivateRoute>
+                      <PricingStudio />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/cpq/:id"
+                  element={
+                    <PrivateRoute>
+                      <PricingStudio />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/quotations"
+                  element={
+                    <PrivateRoute>
+                      <QuotationsList />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/pipeline"
+                  element={
+                    <PrivateRoute>
+                      <PipelineKanban />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/reporting"
+                  element={
+                    <PrivateRoute>
+                      <ReportingDesk />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/approvals"
+                  element={
+                    <PrivateRoute>
+                      <ApprovalsDesk />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/catalog"
+                  element={
+                    <PrivateRoute>
+                      <CatalogManagement />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/customers"
+                  element={
+                    <PrivateRoute>
+                      <CustomersDesk />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/inventory"
+                  element={
+                    <PrivateRoute>
+                      <InventoryDesk />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/billing"
+                  element={
+                    <PrivateRoute>
+                      <BillingDesk />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/intelligence"
+                  element={
+                    <PrivateRoute>
+                      <DealIntelligence />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <PrivateRoute>
+                      <UsersAdmin />
+                    </PrivateRoute>
+                  }
+                />
 
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </KeyboardShortcutsProvider>
           </Router>
         </ConfirmProvider>
       </ToastProvider>
