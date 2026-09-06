@@ -259,11 +259,6 @@ const CustomerPortal = () => {
         </div>
       </header>
 
-      {/* ===== BREADCRUMB ===== */}
-      <div className="breadcrumb" style={{ marginTop: "16px" }}>
-        <Link to="/dashboard">Home</Link> <span className="sep">/</span> <span>Customer Negotiation Portal</span> <span className="sep">/</span> <span className="current">Quotation #{quoteData.quotation_number || quoteData.id}</span>
-      </div>
-
       {/* Re-Approval Notice Alert if triggered */}
       {reApprovalNotice && (
         <div
