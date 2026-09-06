@@ -33,8 +33,11 @@ const CustomerPortal = () => {
     localStorage.removeItem("dealflow_theme");
   }, []);
 
+  // View Mode: 'counter' (viewing requested counter discount) vs 'original'
+  const [viewMode, setViewMode] = useState("counter");
+
   // Negotiation Form State
-  const [counterDiscount, setCounterDiscount] = useState(15);
+  const [counterDiscount, setCounterDiscount] = useState(35);
   const [customerComment, setCustomerComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [reApprovalNotice, setReApprovalNotice] = useState(null);
@@ -44,13 +47,21 @@ const CustomerPortal = () => {
       setLoading(true);
       const res = await quotationsApi.getPublic(id);
       setQuoteData(res.data?.quotation);
-      setNegotiations(res.data?.negotiations || []);
+      const negs = res.data?.negotiations || [];
+      setNegotiations(negs);
 
-      const items = res.data?.quotation?.QuotationItems || [];
-      if (items.length > 0) {
-        const avgDisc =
-          items.reduce((acc, i) => acc + (Number(i.discount_percent) || 0), 0) / items.length;
-        setCounterDiscount(Math.min(30, Math.round(avgDisc + 5)));
+      if (negs.length > 0) {
+        const latest = negs[negs.length - 1];
+        if (latest.requested_discount) {
+          setCounterDiscount(Number(latest.requested_discount));
+        }
+      } else {
+        const items = res.data?.quotation?.QuotationItems || [];
+        if (items.length > 0) {
+          const avgDisc =
+            items.reduce((acc, i) => acc + (Number(i.discount_percent) || 0), 0) / items.length;
+          setCounterDiscount(Math.min(35, Math.round(avgDisc + 5)));
+        }
       }
     } catch (err) {
       showToast({
@@ -76,10 +87,12 @@ const CustomerPortal = () => {
     0
   );
   const currentTotal = Number(quoteData?.total_amount) || grossTotal;
+  const latestNegotiation = negotiations.length > 0 ? negotiations[negotiations.length - 1] : null;
+  const activeCounterDiscount = latestNegotiation ? Number(latestNegotiation.requested_discount) : counterDiscount;
 
   // Proposed counter total calculation
-  const proposedCounterTotal = grossTotal * (1 - counterDiscount / 100);
-  const proposedSavings = grossTotal - proposedCounterTotal;
+  const proposedCounterTotal = grossTotal * (1 - (viewMode === "counter" ? activeCounterDiscount : 0) / 100);
+  const proposedSavings = grossTotal - (grossTotal * (1 - activeCounterDiscount / 100));
 
   const handleNegotiateSubmit = async (e) => {
     e.preventDefault();
@@ -96,9 +109,21 @@ const CustomerPortal = () => {
       const res = await quotationsApi.negotiatePublic(id, payload);
       const msg = res.data?.message || "Proposal submitted successfully.";
 
-      if (res.data?.reApprovalTriggered) {
+      // Optimistically update negotiations state
+      const newNeg = {
+        id: Date.now(),
+        quotation_id: id,
+        requested_discount: Number(counterDiscount),
+        message: payload.comment,
+        created_at: new Date().toISOString(),
+        status: "OPEN",
+      };
+      setNegotiations((prev) => [...prev, newNeg]);
+      setViewMode("counter");
+
+      if (res.data?.reApprovalTriggered || Number(counterDiscount) > 20) {
         setReApprovalNotice(
-          "Automated Governance Triggered: Your requested concession exceeds standard policy. The quotation has automatically been routed to executive leadership for Level 1/Level 2 review."
+          `Automated Governance Triggered: Your requested concession (${counterDiscount}%) exceeds standard rep autonomy. The quotation has automatically re-routed to executive leadership for signoff.`
         );
       } else {
         setReApprovalNotice(null);
@@ -255,6 +280,39 @@ const CustomerPortal = () => {
         </div>
       )}
 
+      {/* Active Counter-Offer Banner */}
+      {latestNegotiation && (
+        <div
+          style={{
+            backgroundColor: "rgba(217, 119, 6, 0.08)",
+            border: "1px solid var(--orange)",
+            borderRadius: "var(--radius-sm)",
+            padding: "1rem 1.25rem",
+            marginBottom: "1.5rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "0.75rem",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <MessageSquare size={22} color="var(--orange)" style={{ flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: 800, color: "var(--orange)", fontSize: "0.9375rem" }}>
+                Active Counter-Offer in Portal: {latestNegotiation.requested_discount}% Concession Requested
+              </div>
+              <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "2px" }}>
+                Customer Proposal: "{latestNegotiation.message}" · Re-calculated below at ₹{(grossTotal * (1 - Number(latestNegotiation.requested_discount) / 100)).toFixed(2)}.
+              </div>
+            </div>
+          </div>
+          <span className="badge badge-pending" style={{ padding: "6px 14px", fontWeight: 700, fontSize: "0.8125rem" }}>
+            Awaiting Sales Leadership Review
+          </span>
+        </div>
+      )}
+
       {/* ===== PAGE HEADER ===== */}
       <div className="page-header">
         <div className="label">Commercial Quotation</div>
@@ -266,28 +324,32 @@ const CustomerPortal = () => {
       {/* ===== STATS ROW (ref ui.txt) ===== */}
       <div className="stats">
         <div className="stat-card">
-          <div className="label">Quoted Total Value</div>
-          <div className="value orange tnum">
+          <div className="label">Original Quoted Total</div>
+          <div className="value tnum" style={{ color: "var(--text-secondary)" }}>
             ₹{currentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="label">Line Products</div>
-          <div className="value tnum">{items.length} Items</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="label">Offer Validity</div>
-          <div className="value tnum" style={{ fontSize: "18px" }}>
-            {quoteData.valid_until ? new Date(quoteData.valid_until).toLocaleDateString() : "Net 30"}
+        <div className="stat-card" style={{ borderLeft: "3px solid var(--orange)" }}>
+          <div className="label">
+            {latestNegotiation ? `Your Counter Total (${activeCounterDiscount}%)` : "Target Proposal Total"}
+          </div>
+          <div className="value orange tnum" style={{ fontWeight: 800 }}>
+            ₹{(grossTotal * (1 - activeCounterDiscount / 100)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="label">Payment Terms</div>
-          <div className="value tnum" style={{ fontSize: "18px" }}>
-            Net 30 Commercial
+          <div className="label">Requested Concession</div>
+          <div className="value tnum" style={{ color: "var(--color-success)" }}>
+            {activeCounterDiscount}% Off
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="label">Commercial Status</div>
+          <div className="value tnum" style={{ fontSize: "16px" }}>
+            {quoteData.status === "PENDING_APPROVAL" ? "Leadership Review" : quoteData.status === "CONFIRMED" ? "Order Confirmed" : "Under Negotiation"}
           </div>
         </div>
       </div>
@@ -297,12 +359,32 @@ const CustomerPortal = () => {
         {/* Left Column: Product Specifications Table */}
         <div>
           <div className="card" style={{ borderTop: "3px solid var(--orange)" }}>
-            <div className="card-header">
+            <div className="card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Layers size={16} color="var(--orange)" />
                 <span style={{ fontWeight: 700, fontSize: "14px" }}>Configured Product Lines</span>
+                <span className="badge badge-orange">{items.length} Lines</span>
               </div>
-              <span className="badge badge-orange">{items.length} Lines</span>
+
+              {/* View Mode Toggle */}
+              <div style={{ display: "flex", gap: "6px" }}>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("counter")}
+                  className={`btn btn-sm ${viewMode === "counter" ? "btn-primary" : "btn-secondary"}`}
+                  style={{ fontSize: "0.72rem", padding: "3px 8px" }}
+                >
+                  ⚡ View with {activeCounterDiscount}% Counter-Bid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("original")}
+                  className={`btn btn-sm ${viewMode === "original" ? "btn-primary" : "btn-secondary"}`}
+                  style={{ fontSize: "0.72rem", padding: "3px 8px" }}
+                >
+                  Original Quote
+                </button>
+              </div>
             </div>
 
             <div className="data-table-wrapper">
@@ -327,8 +409,9 @@ const CustomerPortal = () => {
                     items.map((item, idx) => {
                       const unitPrice = Number(item.unit_price) || 0;
                       const qty = Number(item.quantity) || 1;
-                      const disc = Number(item.discount_percent) || 0;
-                      const lineTotal = unitPrice * qty * (1 - disc / 100);
+                      const originalDisc = Number(item.discount_percent) || 0;
+                      const effectiveDisc = viewMode === "counter" ? activeCounterDiscount : originalDisc;
+                      const lineTotal = unitPrice * qty * (1 - effectiveDisc / 100);
 
                       return (
                         <tr key={idx}>
@@ -350,8 +433,12 @@ const CustomerPortal = () => {
                           </td>
 
                           <td>
-                            {disc > 0 ? (
-                              <span className="badge badge-orange">{disc}%</span>
+                            {viewMode === "counter" ? (
+                              <span className="badge badge-orange tnum" style={{ fontWeight: 700 }}>
+                                {activeCounterDiscount}% (Bid)
+                              </span>
+                            ) : originalDisc > 0 ? (
+                              <span className="badge badge-draft">{originalDisc}%</span>
                             ) : (
                               <span style={{ color: "var(--text-muted)", fontSize: "0.75rem" }}>0%</span>
                             )}
@@ -379,10 +466,17 @@ const CustomerPortal = () => {
               }}
             >
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                All pricing in INR (₹). Includes standard enterprise support SLA.
+                {viewMode === "counter" ? (
+                  <span style={{ color: "var(--color-success)", fontWeight: 600 }}>
+                    ⚡ Simulating your requested {activeCounterDiscount}% counter-proposal (Saves ₹{proposedSavings.toFixed(2)})
+                  </span>
+                ) : (
+                  "All pricing in INR (₹). Standard enterprise terms."
+                )}
               </div>
               <div className="tnum" style={{ fontWeight: 800, fontSize: "1.125rem", color: "var(--orange)" }}>
-                Total: ₹{currentTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {viewMode === "counter" ? "Proposed Total: " : "Original Total: "}
+                ₹{(viewMode === "counter" ? (grossTotal * (1 - activeCounterDiscount / 100)) : currentTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
           </div>
@@ -492,6 +586,20 @@ const CustomerPortal = () => {
 
               {/* Counter Discount Proposal Form */}
               <form onSubmit={handleNegotiateSubmit}>
+                {latestNegotiation && (
+                  <div style={{ padding: "0.75rem 0.875rem", backgroundColor: "var(--orange-pale)", border: "1px solid var(--orange)", borderRadius: "var(--radius-sm)", marginBottom: "1rem" }}>
+                    <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--orange)", textTransform: "uppercase" }}>
+                      ⚡ Submitted Proposal on Record
+                    </div>
+                    <div style={{ fontSize: "0.875rem", fontWeight: 800, marginTop: "2px" }}>
+                      {latestNegotiation.requested_discount}% Discount Requested
+                    </div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "2px" }}>
+                      Status: Under Executive Leadership Review
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ marginBottom: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
                     <label className="form-label" style={{ marginBottom: 0 }}>
@@ -502,10 +610,33 @@ const CustomerPortal = () => {
                     </span>
                   </div>
 
+                  {/* Quick Select Preset Pills */}
+                  <div style={{ display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
+                    {[10, 15, 20, 25, 30, 35, 40].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setCounterDiscount(pct)}
+                        style={{
+                          padding: "2px 8px",
+                          fontSize: "0.7rem",
+                          borderRadius: "4px",
+                          border: `1px solid ${counterDiscount === pct ? "var(--orange)" : "var(--border-light)"}`,
+                          backgroundColor: counterDiscount === pct ? "var(--orange-pale)" : "var(--bg-card)",
+                          color: counterDiscount === pct ? "var(--orange)" : "var(--text)",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {pct}%
+                      </button>
+                    ))}
+                  </div>
+
                   <input
                     type="range"
                     min="5"
-                    max="35"
+                    max="50"
                     step="1"
                     value={counterDiscount}
                     onChange={(e) => setCounterDiscount(Number(e.target.value))}
@@ -513,8 +644,8 @@ const CustomerPortal = () => {
                   />
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.6875rem", color: "var(--text-muted)" }}>
                     <span>5% (Standard)</span>
-                    <span>15% (Tier Limit)</span>
-                    <span>25%+ (Director Esc.)</span>
+                    <span>20% (Tier Limit)</span>
+                    <span>35%+ (Director Esc.)</span>
                   </div>
                 </div>
 
