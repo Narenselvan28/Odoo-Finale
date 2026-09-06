@@ -9,6 +9,7 @@ import {
   warehousesApi,
   inventoryApi,
   productRecommendationsApi,
+  negotiationsApi,
 } from "../api";
 import { useToast } from "../context/ToastContext";
 import { formatINR, formatCompactINR, formatCurrencyINR } from "../utils/formatters";
@@ -37,6 +38,7 @@ import {
   Info,
   ShieldAlert,
   ExternalLink,
+  MessageSquare,
 } from "lucide-react";
 
 const PricingStudio = () => {
@@ -68,6 +70,9 @@ const PricingStudio = () => {
 
   // Line Items State
   const [lineItems, setLineItems] = useState([]);
+
+  // Customer Portal Negotiations State
+  const [quoteNegotiations, setQuoteNegotiations] = useState([]);
 
   // B5: Recommendation Dismissal State
   const [dismissedRecIds, setDismissedRecIds] = useState(new Set());
@@ -101,13 +106,14 @@ const PricingStudio = () => {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const [custRes, prodRes, whRes, invRes, recRes, quotesRes] = await Promise.all([
+        const [custRes, prodRes, whRes, invRes, recRes, quotesRes, negsRes] = await Promise.all([
           customersApi.getAll().catch(() => ({ data: [] })),
           productsApi.getAll().catch(() => ({ data: [] })),
           warehousesApi.getAll().catch(() => ({ data: [] })),
           inventoryApi.getAll().catch(() => ({ data: [] })),
           productRecommendationsApi.getAll().catch(() => ({ data: [] })),
           quotationsApi.getAll().catch(() => ({ data: [] })),
+          negotiationsApi.getAll().catch(() => ({ data: [] })),
         ]);
 
         const custList = custRes.data?.customers || custRes.data || [];
@@ -116,6 +122,7 @@ const PricingStudio = () => {
         const invList = invRes.data || [];
         const recList = recRes.data || [];
         const quotes = quotesRes.data || [];
+        const allNegs = Array.isArray(negsRes.data) ? negsRes.data : [];
 
         setCustomers(custList);
         setProducts(prodList);
@@ -138,6 +145,14 @@ const PricingStudio = () => {
               if (qData.valid_until) {
                 setValidUntil(new Date(qData.valid_until).toISOString().split("T")[0]);
               }
+
+              // Load negotiations for this quotation
+              const quoteNegs =
+                qData.Negotiations && qData.Negotiations.length > 0
+                  ? qData.Negotiations
+                  : allNegs.filter((n) => Number(n.quotation_id) === Number(qData.id));
+              setQuoteNegotiations(quoteNegs);
+
               if (qData.QuotationItems && qData.QuotationItems.length > 0) {
                 const items = qData.QuotationItems.map((item) => {
                   const prod = item.Product || prodList.find((p) => p.id === item.product_id) || {};
@@ -537,14 +552,38 @@ const PricingStudio = () => {
     return freight;
   }, [warehouseSplitPlan]);
 
-  // B7: Hybrid Billing & Subscription Calculations
-  const capexItems = calculatedItems.filter((i) => i.product_type !== "SUBSCRIPTION");
-  const opexItems = calculatedItems.filter((i) => i.product_type === "SUBSCRIPTION");
+  // Customer Counter-Proposal Intelligence (Spec B8 Reflection)
+  const latestCustomerCounter = useMemo(() => {
+    if (!quoteNegotiations || quoteNegotiations.length === 0) return null;
+    return quoteNegotiations[quoteNegotiations.length - 1];
+  }, [quoteNegotiations]);
 
-  const capexTotal = capexItems.reduce((acc, i) => acc + i.net, 0);
-  const monthlyOpex = opexItems.reduce((acc, i) => acc + i.net, 0);
-  const annualRecurringRevenue = monthlyOpex * 12;
-  const totalContractValue = capexTotal + monthlyOpex * contractTermMonths;
+  const handleApplyCustomerCounterOffer = () => {
+    if (!latestCustomerCounter) return;
+    const requested = Number(latestCustomerCounter.requested_discount) || 0;
+    setLineItems((prev) =>
+      prev.map((item) => ({
+        ...item,
+        discount_percent: requested,
+      }))
+    );
+    showToast({
+      title: "Customer Counter-Offer Applied",
+      message: `Adjusted all lines to customer's requested ${requested}% discount. Live limits & Blended Risk re-evaluated.`,
+      type: "warning",
+    });
+  };
+
+  const handleApplyLineCustomerDiscount = (idx) => {
+    if (!latestCustomerCounter) return;
+    const requested = Number(latestCustomerCounter.requested_discount) || 0;
+    handleItemChange(idx, "discount_percent", requested);
+    showToast({
+      title: "Line Discount Matched",
+      message: `Matched line discount to customer's ${requested}% bid.`,
+      type: "info",
+    });
+  };
 
   // Save Quotation Handler
   const handleSaveQuotation = async (status = "DRAFT") => {
@@ -755,6 +794,98 @@ const PricingStudio = () => {
       <div className="cpq-workbench">
         {/* Left Column: Interactive Line Items Configurator & Upsell Panels */}
         <div>
+          {/* Customer Counter-Proposal Intelligence Banner (Spec B8) */}
+          {latestCustomerCounter && (
+            <div
+              style={{
+                marginBottom: "1.25rem",
+                padding: "1rem 1.25rem",
+                backgroundColor: "#fff7ed",
+                border: "2px solid #ea580c",
+                borderRadius: "var(--radius-md)",
+                boxShadow: "0 2px 8px rgba(234, 88, 12, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "1rem",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flex: 1, minWidth: "280px" }}>
+                <div
+                  style={{
+                    backgroundColor: "#ea580c",
+                    color: "#ffffff",
+                    borderRadius: "50%",
+                    width: "36px",
+                    height: "36px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    boxShadow: "0 2px 4px rgba(234, 88, 12, 0.3)",
+                  }}
+                >
+                  <MessageSquare size={20} />
+                </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                    <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "#9a3412" }}>
+                      Active Customer Counter-Proposal: {latestCustomerCounter.requested_discount}% Concession Requested
+                    </span>
+                    <span
+                      className="badge"
+                      style={{
+                        backgroundColor: "#ffedd5",
+                        color: "#c2410c",
+                        border: "1px solid #fdba74",
+                        fontWeight: 700,
+                        fontSize: "0.6875rem",
+                      }}
+                    >
+                      {latestCustomerCounter.status || "OPEN"}
+                    </span>
+                  </div>
+                  <p style={{ margin: "4px 0 0 0", fontSize: "0.835rem", color: "#7c2d12" }}>
+                    "{latestCustomerCounter.message || "Customer requested price adjustment via portal."}"
+                  </p>
+                  <div style={{ fontSize: "0.72rem", color: "#9a3412", marginTop: "4px" }}>
+                    Received {latestCustomerCounter.created_at ? new Date(latestCustomerCounter.created_at).toLocaleString() : "Recently via Customer Portal"}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={handleApplyCustomerCounterOffer}
+                  className="btn"
+                  style={{
+                    backgroundColor: "#ea580c",
+                    borderColor: "#c2410c",
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    fontSize: "0.835rem",
+                    padding: "8px 16px",
+                    boxShadow: "0 2px 6px rgba(234, 88, 12, 0.3)",
+                    cursor: "pointer",
+                  }}
+                >
+                  ⚡ Apply Customer's {latestCustomerCounter.requested_discount}% Concession to All Lines
+                </button>
+                <Link
+                  to={`/portal/${loadedQuoteId}`}
+                  target="_blank"
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: "0.75rem", padding: "6px 10px" }}
+                >
+                  <ExternalLink size={13} />
+                  <span>View Portal</span>
+                </Link>
+              </div>
+            </div>
+          )}
+
           <div className="data-card">
             <div className="data-card-header">
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -879,6 +1010,29 @@ const PricingStudio = () => {
                             />
                             <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>%</span>
                           </div>
+                          {latestCustomerCounter && Number(item.discount_percent) !== Number(latestCustomerCounter.requested_discount) && (
+                            <button
+                              type="button"
+                              onClick={() => handleApplyLineCustomerDiscount(idx)}
+                              title={`Set line discount to customer's requested ${latestCustomerCounter.requested_discount}% counter-offer`}
+                              style={{
+                                marginTop: "3px",
+                                padding: "1px 5px",
+                                fontSize: "0.65rem",
+                                fontWeight: 700,
+                                borderRadius: "3px",
+                                border: "1px dashed #ea580c",
+                                backgroundColor: "#fff7ed",
+                                color: "#ea580c",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                              }}
+                            >
+                              ⚡ Bid: {latestCustomerCounter.requested_discount}%
+                            </button>
+                          )}
                         </td>
 
                         <td>
@@ -1078,6 +1232,90 @@ const PricingStudio = () => {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Customer Portal Negotiation History Feed (Spec B8) */}
+          {quoteNegotiations.length > 0 && (
+            <div className="data-card" style={{ marginTop: "1rem" }}>
+              <div
+                style={{
+                  padding: "1rem 1.25rem",
+                  borderBottom: "1px solid var(--color-border-subtle)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <MessageSquare size={18} color="var(--orange)" />
+                  <span className="data-card-title">Customer Portal Counter-Proposals & Negotiation Feed (Spec B8)</span>
+                </div>
+                <span className="badge badge-orange">{quoteNegotiations.length} Events</span>
+              </div>
+
+              <div style={{ padding: "1.25rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  {quoteNegotiations.map((neg, idx) => (
+                    <div
+                      key={neg.id || idx}
+                      style={{
+                        padding: "0.75rem 1rem",
+                        backgroundColor: "var(--bg-secondary)",
+                        borderLeft: "3px solid var(--orange)",
+                        borderRadius: "var(--radius-sm)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "0.75rem",
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text-heading)" }}>
+                            Counter-Offer: {neg.requested_discount}% Concession
+                          </span>
+                          <span
+                            className="badge"
+                            style={{
+                              backgroundColor: "var(--orange-pale)",
+                              color: "var(--orange)",
+                              fontSize: "0.6875rem",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {neg.status || "OPEN"}
+                          </span>
+                        </div>
+                        <p style={{ margin: "4px 0 0 0", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+                          "{neg.message || "Customer requested adjustment"}"
+                        </p>
+                        <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "4px" }}>
+                          {neg.created_at ? new Date(neg.created_at).toLocaleString() : "Recently"}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const reqDisc = Number(neg.requested_discount) || 0;
+                          setLineItems((prev) => prev.map((it) => ({ ...it, discount_percent: reqDisc })));
+                          showToast({
+                            title: "Counter-Proposal Applied",
+                            message: `Set all lines to ${reqDisc}% discount from event #${idx + 1}.`,
+                            type: "warning",
+                          });
+                        }}
+                        className="btn btn-secondary btn-sm"
+                        style={{ fontSize: "0.75rem", padding: "4px 10px" }}
+                      >
+                        ⚡ Apply {neg.requested_discount}% to Lines
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

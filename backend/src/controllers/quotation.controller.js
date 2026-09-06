@@ -62,7 +62,9 @@ const getOne = async (req, res) => {
         { model: Customer, as: "Customer", include: [{ model: CustomerTier, as: "CustomerTier" }] },
         { model: User, as: "salesRep", attributes: ["id", "name", "email"] },
         { model: QuotationItem, as: "QuotationItems", include: [{ model: Product, as: "Product", include: [{ model: Category, as: "Category" }] }] },
+        { model: Negotiation },
       ],
+      order: [[{ model: Negotiation }, "created_at", "ASC"]],
     });
     if (!quotation) return res.status(404).json({ message: "Quotation not found" });
     res.json(quotation);
@@ -89,29 +91,45 @@ const create = async (req, res) => {
     const customer = await Customer.findByPk(quotationData.customer_id, {
       include: [{ model: CustomerTier, as: "CustomerTier" }],
     });
-    const categories = await Category.findAll();
 
-    // Compute Blended Risk
+    // Calculate risk
+    const categories = await Category.findAll();
     const riskAnalysis = computeBlendedRisk({
       items: items || [],
       customerTier: customer?.CustomerTier,
       categories,
     });
 
-    // Auto-escalation: If risk analysis requires approval, auto-set to PENDING_APPROVAL
-    if (riskAnalysis.requiresApproval && quotationData.status !== "DRAFT") {
-      quotationData.status = "PENDING_APPROVAL";
+    // Determine initial status based on risk
+    let initialStatus = quotationData.status || "DRAFT";
+    if (riskAnalysis.requiresApproval && initialStatus !== "DRAFT") {
+      initialStatus = "PENDING_APPROVAL";
     }
 
-    const quotation = await Quotation.create(quotationData);
+    const quotation = await Quotation.create({
+      ...quotationData,
+      status: initialStatus,
+      risk_score: riskAnalysis.blendedRiskScore,
+      risk_level:
+        riskAnalysis.blendedRiskScore <= 15
+          ? "LOW"
+          : riskAnalysis.blendedRiskScore <= 29
+          ? "MEDIUM"
+          : "HIGH",
+    });
 
-    // Create Line Items if provided
+    // Create line items
     if (items && items.length > 0) {
       const lineItems = items.map((item) => ({
-        ...item,
         quotation_id: quotation.id,
-        discount_amount: ((item.unit_price * item.quantity) * (item.discount_percent || 0)) / 100,
-        line_total:
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        cost_price: item.cost_price || 0,
+        discount_percent: item.discount_percent || 0,
+        discount_amount:
+          ((item.unit_price * item.quantity) * (item.discount_percent || 0)) / 100,
+        total_price:
           item.unit_price * item.quantity -
           ((item.unit_price * item.quantity) * (item.discount_percent || 0)) / 100,
         margin_amount:
@@ -148,6 +166,7 @@ const create = async (req, res) => {
       include: [
         { model: QuotationItem, as: "QuotationItems" },
         { model: Customer, as: "Customer" },
+        { model: Negotiation },
       ],
     });
 
@@ -163,10 +182,98 @@ const create = async (req, res) => {
 // PUT /api/quotations/:id
 const update = async (req, res) => {
   try {
+    const { items, ...quotationData } = req.body;
     const quotation = await Quotation.findByPk(req.params.id);
     if (!quotation) return res.status(404).json({ message: "Quotation not found" });
-    await quotation.update(req.body);
-    res.json(quotation);
+
+    // If customer changed or items provided, re-evaluate risk and line items
+    const customerId = quotationData.customer_id || quotation.customer_id;
+    const customer = await Customer.findByPk(customerId, {
+      include: [{ model: CustomerTier, as: "CustomerTier" }],
+    });
+    const categories = await Category.findAll();
+
+    let riskAnalysis = null;
+    let newSubtotal = quotation.subtotal;
+    let newDiscountAmount = quotation.discount_amount;
+    let newTotalAmount = quotation.total_amount;
+
+    if (items && Array.isArray(items)) {
+      riskAnalysis = computeBlendedRisk({
+        items: items || [],
+        customerTier: customer?.CustomerTier,
+        categories,
+      });
+
+      // Clear existing items and bulk insert updated items
+      await QuotationItem.destroy({ where: { quotation_id: quotation.id } });
+      const lineItems = items.map((item) => ({
+        quotation_id: quotation.id,
+        product_id: item.product_id,
+        quantity: item.quantity || 1,
+        unit_price: item.unit_price,
+        cost_price: item.cost_price || 0,
+        discount_percent: item.discount_percent || 0,
+        discount_amount:
+          ((item.unit_price * (item.quantity || 1)) * (item.discount_percent || 0)) / 100,
+        total_price:
+          item.unit_price * (item.quantity || 1) -
+          ((item.unit_price * (item.quantity || 1)) * (item.discount_percent || 0)) / 100,
+        margin_amount:
+          (item.unit_price - (item.cost_price || 0)) * (item.quantity || 1),
+      }));
+      await QuotationItem.bulkCreate(lineItems);
+
+      newSubtotal = lineItems.reduce((s, i) => s + i.unit_price * i.quantity, 0);
+      newDiscountAmount = lineItems.reduce((s, i) => s + i.discount_amount, 0);
+      newTotalAmount = newSubtotal - newDiscountAmount;
+    }
+
+    let statusToSet = quotationData.status || quotation.status;
+    if (riskAnalysis && riskAnalysis.requiresApproval && statusToSet === "CONFIRMED") {
+      statusToSet = "PENDING_APPROVAL";
+    }
+
+    const updateFields = {
+      ...quotationData,
+      subtotal: newSubtotal,
+      discount_amount: newDiscountAmount,
+      total_amount: newTotalAmount,
+      status: statusToSet,
+    };
+
+    if (riskAnalysis) {
+      updateFields.risk_score = riskAnalysis.blendedRiskScore;
+      updateFields.risk_level =
+        riskAnalysis.blendedRiskScore <= 15
+          ? "LOW"
+          : riskAnalysis.blendedRiskScore <= 29
+          ? "MEDIUM"
+          : "HIGH";
+    }
+
+    await quotation.update(updateFields);
+
+    // Auto-generate approval request if moved to PENDING_APPROVAL
+    if (statusToSet === "PENDING_APPROVAL" && riskAnalysis?.requiresApproval) {
+      await ApprovalRequest.create({
+        quotation_id: quotation.id,
+        approval_level: riskAnalysis.requiredLevel,
+        approver_role: riskAnalysis.approvalRole,
+        status: "PENDING",
+        reason: riskAnalysis.explanation,
+      });
+    }
+
+    const refreshed = await Quotation.findByPk(quotation.id, {
+      include: [
+        { model: Customer, as: "Customer", include: [{ model: CustomerTier, as: "CustomerTier" }] },
+        { model: QuotationItem, as: "QuotationItems", include: [{ model: Product, as: "Product", include: [{ model: Category, as: "Category" }] }] },
+        { model: Negotiation },
+      ],
+    });
+
+    res.json(refreshed);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -272,9 +379,17 @@ const customerNegotiate = async (req, res) => {
         status: "OPEN",
       });
 
+      // Also create Alert for sales reps / approvers
+      await Alert.create({
+        quotation_id: quotation.id,
+        alert_type: "GOVERNANCE_BREACH",
+        severity: Number(counter_discount) > 25 ? "HIGH" : "MEDIUM",
+        message: `Customer proposed a ${counter_discount}% concession on Quotation #${quotation.quotation_number}: "${comment || 'Counter-proposal received via portal'}"`,
+      });
+
       // Check if the requested discount triggers the automated re-approval loop!
       const categories = await Category.findAll();
-      const hypotheticalItems = quotation.QuotationItems.map((item) => ({
+      const hypotheticalItems = (quotation.QuotationItems || []).map((item) => ({
         product_id: item.product_id,
         quantity: item.quantity,
         unit_price: item.unit_price,
@@ -287,9 +402,15 @@ const customerNegotiate = async (req, res) => {
         categories,
       });
 
+      let nextStatus = "UNDER_NEGOTIATION";
+      let reApprovalTriggered = false;
+      let responseMsg = "Counter-proposal received and logged. Sales representative notified.";
+
       if (risk.requiresApproval) {
-        // Automatically re-enters approval flow B4!
-        await quotation.update({ status: "PENDING_APPROVAL" });
+        nextStatus = "PENDING_APPROVAL";
+        reApprovalTriggered = true;
+        responseMsg = "Counter-offer submitted. Because terms exceed standard limits, the quote has automatically re-entered the Director Approval workflow.";
+
         await ApprovalRequest.create({
           quotation_id: quotation.id,
           approval_level: risk.requiredLevel,
@@ -297,20 +418,22 @@ const customerNegotiate = async (req, res) => {
           status: "PENDING",
           reason: `Customer counter-offer (${counter_discount}%) triggered automatic re-approval loop: ${risk.explanation}`,
         });
-
-        return res.json({
-          message: "Counter-offer submitted. Because terms exceed standard limits, the quote has automatically re-entered the Director Approval workflow.",
-          status: "PENDING_APPROVAL",
-          reApprovalTriggered: true,
-        });
-      } else {
-        await quotation.update({ status: "UNDER_NEGOTIATION" });
-        return res.json({
-          message: "Counter-proposal received and logged. Sales representative notified.",
-          status: "UNDER_NEGOTIATION",
-          reApprovalTriggered: false,
-        });
       }
+
+      await quotation.update({ status: nextStatus });
+
+      // Return refreshed negotiations
+      const updatedNegotiations = await Negotiation.findAll({
+        where: { quotation_id: quotation.id },
+        order: [["created_at", "ASC"]],
+      });
+
+      return res.json({
+        message: responseMsg,
+        status: nextStatus,
+        reApprovalTriggered,
+        negotiations: updatedNegotiations,
+      });
     }
 
     res.status(400).json({ message: "Invalid action type" });

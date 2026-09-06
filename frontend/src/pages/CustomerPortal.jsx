@@ -109,16 +109,19 @@ const CustomerPortal = () => {
       const res = await quotationsApi.negotiatePublic(id, payload);
       const msg = res.data?.message || "Proposal submitted successfully.";
 
-      // Optimistically update negotiations state
-      const newNeg = {
-        id: Date.now(),
-        quotation_id: id,
-        requested_discount: Number(counterDiscount),
-        message: payload.comment,
-        created_at: new Date().toISOString(),
-        status: "OPEN",
-      };
-      setNegotiations((prev) => [...prev, newNeg]);
+      if (res.data?.negotiations && Array.isArray(res.data.negotiations)) {
+        setNegotiations(res.data.negotiations);
+      } else {
+        const newNeg = {
+          id: Date.now(),
+          quotation_id: id,
+          requested_discount: Number(counterDiscount),
+          message: payload.comment,
+          created_at: new Date().toISOString(),
+          status: "OPEN",
+        };
+        setNegotiations((prev) => [...prev, newNeg]);
+      }
       setViewMode("counter");
 
       if (res.data?.reApprovalTriggered || Number(counterDiscount) > 20) {
@@ -136,7 +139,7 @@ const CustomerPortal = () => {
       });
 
       setCustomerComment("");
-      fetchQuote();
+      await fetchQuote();
     } catch (err) {
       showToast({
         title: "Submission failed",
@@ -700,12 +703,16 @@ const CustomerPortal = () => {
 
                 <button
                   type="submit"
-                  disabled={submitting || quoteData.status === "CONFIRMED"}
+                  disabled={submitting}
                   className="btn btn-primary w-full"
                   style={{ width: "100%", justifyContent: "center" }}
                 >
                   <Send size={15} />
-                  <span>Submit Counter-Proposal (Spec B8)</span>
+                  <span>
+                    {quoteData.status === "CONFIRMED"
+                      ? "Submit Revised Counter-Proposal (Spec B8)"
+                      : "Submit Counter-Proposal (Spec B8)"}
+                  </span>
                 </button>
               </form>
 
