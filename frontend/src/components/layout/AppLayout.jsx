@@ -188,47 +188,6 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
         {children}
       </main>
 
-      {/* ===== INSTITUTIONAL FOOTER (ref ui.txt) ===== */}
-      <footer className="footer">
-        <div>
-          <div className="brand">
-            ✦ <span>DealFlow</span> 360
-          </div>
-          <div className="sub">Intelligent, Self-Governing Sales Operations</div>
-        </div>
-        <div>
-          <h6>Commercial Engines</h6>
-          <ul>
-            <li><Link to="/cpq">Configure, Price, Quote (CPQ)</Link></li>
-            <li><Link to="/pipeline">Pipeline Kanban Board</Link></li>
-            <li><Link to="/approvals">Governance & Risk Routing</Link></li>
-            <li><Link to="/billing">Dual Capex / Opex Billing</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h6>Supply & Accounts</h6>
-          <ul>
-            <li><Link to="/inventory">Multi-Warehouse Inventory</Link></li>
-            <li><Link to="/catalog">Product Bundles & Rules</Link></li>
-            <li><Link to="/customers">Customer Account Tiers</Link></li>
-            <li><Link to="/reporting">Executive Telemetry Desk</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h6>Governance & Control</h6>
-          <ul>
-            <li><Link to="/intelligence">Deal Health & Anomaly Radar</Link></li>
-            <li><Link to="/users">Audit Trail Logs</Link></li>
-            <li><span style={{ color: "var(--orange)" }}>Security: RBAC Strict Active</span></li>
-            <li><span style={{ color: "var(--color-success)" }}>Database: MySQL Connected</span></li>
-          </ul>
-        </div>
-      </footer>
-
-      <div className="footer-bottom">
-        © 2026 <span>DealFlow 360</span> · Institutional Sales Operations Platform · All rights reserved
-      </div>
-
       {/* 💬 Global DealFlow360 Conversational Deal Assistant */}
       <DealFlowChatbot />
     </div>

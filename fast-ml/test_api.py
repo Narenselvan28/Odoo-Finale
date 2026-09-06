@@ -3,6 +3,7 @@ DealFlow360 - Comprehensive ML API Test Suite
 Tests all endpoints: Health, Models, Classifier (Normal & High), Regressor, and Error Handling.
 """
 
+import os
 import json
 import requests
 import sys
@@ -17,10 +18,10 @@ def run_tests_with_client():
     app = create_app()
     client = app.test_client()
 
-    # Load sample payloads from metadata
-    with open("models/classifier_features.json", "r", encoding="utf-8") as f:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(base_dir, "models", "classifier_features.json"), "r", encoding="utf-8") as f:
         clf_meta = json.load(f)
-    with open("models/regressor_features.json", "r", encoding="utf-8") as f:
+    with open(os.path.join(base_dir, "models", "regressor_features.json"), "r", encoding="utf-8") as f:
         reg_meta = json.load(f)
 
     # 1. Health Endpoint

@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const XLSX = require("xlsx");
 const bcrypt = require("bcryptjs");
-const { sequelize } = require("../config/database");
+const { sequelize, ensureDatabaseExists } = require("../config/database");
 
 // Import models
 const User = require("../models/User.model");
@@ -47,6 +47,7 @@ async function seedFromExcel() {
   };
 
   console.log("🔄 Syncing and clearing database tables...");
+  await ensureDatabaseExists();
   await sequelize.sync({ force: true });
   const defaultHashedPassword = await bcrypt.hash("password123", 10);
 

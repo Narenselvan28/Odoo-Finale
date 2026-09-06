@@ -57,51 +57,71 @@ class ClassifierService:
         if not isinstance(data, dict):
             return data
         payload = dict(data)
-        payload.setdefault("customer_tier", "GOLD")
-        payload.setdefault("category", "ELECTRONICS")
-        payload.setdefault("customer_state", "SP")
-        payload.setdefault("seller_state", "SP")
-        payload.setdefault("quantity", 10.0)
-        payload.setdefault("price", 1000.0)
-        qty = float(payload.get("quantity", 10.0))
-        price = float(payload.get("price", 1000.0))
-        order_val = qty * price
-        payload.setdefault("order_value", order_val)
-        payload.setdefault("freight_value", 50.0)
-        payload.setdefault("gross_order_value", order_val + 50.0)
-        disc_pct = float(payload.get("discount_percent", 10.0))
-        disc_amt = (order_val * disc_pct) / 100.0
-        payload.setdefault("discount_amount", disc_amt)
-        payload.setdefault("net_sales", order_val - disc_amt)
-        payload.setdefault("customer_avg_discount", 10.0)
-        payload.setdefault("product_avg_discount", 10.0)
-        payload.setdefault("customer_product_avg_discount", 10.0)
-        payload.setdefault("recommended_discount_percent", 12.0)
-        payload.setdefault("discount_gap_percent", disc_pct - 12.0)
-        payload.setdefault("warehouse_count", 1.0)
-        payload.setdefault("available_stock", 500.0)
-        payload.setdefault("reserved_stock", 50.0)
-        payload.setdefault("warehouse_capacity", 1000.0)
-        payload.setdefault("stock_pressure", 0.5)
-        payload.setdefault("warehouse_utilization", 0.6)
-        payload.setdefault("transport_distance_km", 120.0)
-        payload.setdefault("transport_cost", 100.0)
-        payload.setdefault("expected_delivery_days", 4.0)
-        payload.setdefault("product_cost", price * 0.65)
-        payload.setdefault("margin_before_discount", price * 0.35 * qty)
-        payload.setdefault("margin_after_discount", (price * 0.35 * qty) - disc_amt)
-        payload.setdefault("margin_percent", float(payload.get("margin_percent", 20.0)))
-        payload.setdefault("customer_transaction_count", 5.0)
-        payload.setdefault("customer_previous_orders", 5.0)
-        payload.setdefault("product_transaction_count", 20.0)
-        payload.setdefault("product_previous_orders", 20.0)
-        payload.setdefault("actual_delivery_days", 4.0)
-        payload.setdefault("estimated_delivery_days", 4.0)
-        payload.setdefault("delivery_delay_days", 0.0)
-        payload.setdefault("payment_value", order_val - disc_amt)
-        payload.setdefault("payment_installments", 1.0)
-        payload.setdefault("payment_type", "credit_card")
-        payload.setdefault("review_score", 4.5)
+
+        # Aliases mapping
+        if "category" not in payload and "product_category" in payload:
+            payload["category"] = payload["product_category"]
+        if "price" not in payload and "base_price" in payload:
+            payload["price"] = payload["base_price"]
+        if "discount_percent" not in payload and "discount" in payload:
+            payload["discount_percent"] = payload["discount"]
+        elif "discount_percent" not in payload and "current_discount_percent" in payload:
+            payload["discount_percent"] = payload["current_discount_percent"]
+
+        # Only derive secondary numeric metrics if primary inputs are present
+        if "quantity" in payload and "price" in payload:
+            try:
+                qty = float(payload["quantity"])
+                price = float(payload["price"])
+                order_val = qty * price
+                payload.setdefault("order_value", order_val)
+                payload.setdefault("freight_value", 50.0)
+                payload.setdefault("gross_order_value", order_val + 50.0)
+
+                disc_pct = float(payload.get("discount_percent", 10.0))
+                disc_amt = (order_val * disc_pct) / 100.0
+                payload.setdefault("discount_amount", disc_amt)
+                payload.setdefault("net_sales", order_val - disc_amt)
+                payload.setdefault("product_cost", price * 0.65)
+                payload.setdefault("margin_before_discount", price * 0.35 * qty)
+                payload.setdefault("margin_after_discount", (price * 0.35 * qty) - disc_amt)
+                payload.setdefault("payment_value", order_val - disc_amt)
+            except Exception:
+                pass
+
+        # Fill in secondary defaults if missing
+        secondary_defaults = {
+            "customer_state": "SP",
+            "seller_state": "SP",
+            "customer_avg_discount": 10.0,
+            "product_avg_discount": 10.0,
+            "customer_product_avg_discount": 10.0,
+            "recommended_discount_percent": 12.0,
+            "discount_gap_percent": 0.0,
+            "warehouse_count": 1.0,
+            "available_stock": 500.0,
+            "reserved_stock": 50.0,
+            "warehouse_capacity": 1000.0,
+            "stock_pressure": 0.5,
+            "warehouse_utilization": 0.6,
+            "transport_distance_km": 120.0,
+            "transport_cost": 100.0,
+            "expected_delivery_days": 4.0,
+            "margin_percent": 20.0,
+            "customer_transaction_count": 5.0,
+            "customer_previous_orders": 5.0,
+            "product_transaction_count": 20.0,
+            "product_previous_orders": 20.0,
+            "actual_delivery_days": 4.0,
+            "estimated_delivery_days": 4.0,
+            "delivery_delay_days": 0.0,
+            "payment_installments": 1.0,
+            "payment_type": "credit_card",
+            "review_score": 4.5,
+        }
+        for k, v in secondary_defaults.items():
+            payload.setdefault(k, v)
+
         return payload
 
     def predict_risk(self, data):

@@ -1,5 +1,4 @@
-require("dotenv").config();
-const { sequelize } = require("./database");
+const { sequelize, ensureDatabaseExists } = require("./database");
 
 // ── Import all models ────────────────────────────────────────────
 const Role                  = require("../models/Role.model");
@@ -141,6 +140,7 @@ Alert.belongsTo(Quotation, { foreignKey: "quotation_id" });
 // ── Sync ─────────────────────────────────────────────────────────
 (async () => {
   try {
+    await ensureDatabaseExists();
     await sequelize.sync({ alter: true });
     console.log("✅  All tables synced successfully.");
     process.exit(0);

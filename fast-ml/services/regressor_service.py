@@ -137,16 +137,16 @@ class RegressorService:
         payload.setdefault("customer_previous_transactions", 5.0)
         payload.setdefault("customer_avg_previous_discount", 8.0)
         payload.setdefault("product_avg_previous_discount", 8.0)
-        payload.setdefault("category", "ELECTRONICS")
-        payload.setdefault("customer_tier", "GOLD")
-        payload.setdefault("quantity", 10.0)
-        payload.setdefault("price", 1000.0)
         payload.setdefault("delivery_lead_time_days", 4.0)
         payload.setdefault("requested_discount_percent", 10.0)
         payload.setdefault("tier_discount", 12.0)
         payload.setdefault("tier_max_discount", 24.0)
         payload.setdefault("price_band", "PREMIUM")
-        payload.setdefault("order_value", float(payload["quantity"]) * float(payload["price"]))
+        try:
+            if "quantity" in payload and "price" in payload:
+                payload.setdefault("order_value", float(payload["quantity"]) * float(payload["price"]))
+        except Exception:
+            pass
         payload.setdefault("is_expedited_delivery", 0.0)
 
         return payload

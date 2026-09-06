@@ -7,6 +7,8 @@
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:ml": "python fast-ml/app.py",
     "test:ml": "python fast-ml/run_all_tests.py",
+    "test:backend": "npm test --prefix backend",
+    "test:all": "npm test --prefix backend && python fast-ml/run_all_tests.py",
     "backend": "npm run dev --prefix backend",
     "frontend": "npm run dev --prefix frontend",
     "ml": "python fast-ml/app.py",
