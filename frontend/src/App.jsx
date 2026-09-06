@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { ConfirmProvider } from "./context/ConfirmContext";
 import PrivateRoute from "./components/PrivateRoute";
 
 // Pages
@@ -24,7 +25,8 @@ function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <Router>
+        <ConfirmProvider>
+          <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -140,6 +142,7 @@ function App() {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Router>
+        </ConfirmProvider>
       </ToastProvider>
     </AuthProvider>
   );

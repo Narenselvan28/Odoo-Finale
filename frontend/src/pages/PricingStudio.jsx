@@ -12,6 +12,7 @@ import {
   intelligenceApi,
 } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import { formatINR, formatCompactINR, formatCurrencyINR } from "../utils/formatters";
 import {
   Plus,
@@ -42,6 +43,7 @@ import {
 
 const PricingStudio = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const { id: routeQuoteId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -274,11 +276,22 @@ const PricingStudio = () => {
     });
   };
 
-  const handleRemoveItem = (index) => {
+  const handleRemoveItem = async (index) => {
     if (lineItems.length === 1) {
       showToast({ message: "Quotation must have at least one line item.", type: "error" });
       return;
     }
+
+    const item = lineItems[index];
+    const isConfirmed = await confirm({
+      title: "Remove Line Item",
+      message: `Are you sure you want to remove line item "${item.name || `Item #${index + 1}`}" from this quotation?`,
+      confirmText: "Remove Item",
+      type: "danger",
+    });
+
+    if (!isConfirmed) return;
+
     setLineItems((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -602,6 +615,21 @@ const PricingStudio = () => {
     if (!selectedCustomerId) {
       showToast({ message: "Please select a customer.", type: "error" });
       return;
+    }
+
+    if (status === "PENDING_APPROVAL") {
+      const isConfirmed = await confirm({
+        title: "Submit for Governance Review",
+        message: `Are you sure you want to submit Quotation #${quoteNumber} for leadership approval?`,
+        details: [
+          `Total Quotation Value: ₹${grandTotal.toFixed(2)}`,
+          `Estimated Blended Margin: ${blendedMarginPercent.toFixed(1)}%`,
+          `Assigned Authority: ${riskAnalysis.approvalRole} (Level ${riskAnalysis.requiredLevel})`,
+        ],
+        confirmText: "Submit for Approval",
+        type: "warning",
+      });
+      if (!isConfirmed) return;
     }
 
     try {

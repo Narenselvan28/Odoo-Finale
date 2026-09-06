@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { customersApi, customerTiersApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import {
   Users,
   Shield,
@@ -16,6 +17,7 @@ import {
 
 const CustomersDesk = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState("customers");
   const [customers, setCustomers] = useState([]);
   const [tiers, setTiers] = useState([]);
@@ -65,6 +67,30 @@ const CustomersDesk = () => {
       fetchData();
     } catch (err) {
       showToast({ title: "Failed to create", message: err.response?.data?.message || err.message, type: "error" });
+    }
+  };
+
+  const handleDeleteCustomer = async (c) => {
+    const isConfirmed = await confirm({
+      title: "Delete Customer Account",
+      message: `Are you sure you want to permanently delete ${c.name}?`,
+      details: [
+        `Account ID: #${c.id}`,
+        `Email: ${c.email || "N/A"}`,
+        "All historical customer association links will be detached.",
+      ],
+      confirmText: "Delete Customer",
+      type: "danger",
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await customersApi.remove(c.id);
+      showToast({ title: "Customer Deleted", message: `${c.name} removed.`, type: "success" });
+      setCustomers((prev) => prev.filter((item) => item.id !== c.id));
+    } catch (err) {
+      showToast({ title: "Delete Error", message: err.response?.data?.message || err.message, type: "error" });
     }
   };
 
@@ -122,13 +148,14 @@ const CustomersDesk = () => {
                   <th>Policy Tier</th>
                   <th>Industry Vertical</th>
                   <th>Created</th>
+                  <th style={{ textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="6" style={{ textAlign: "center", padding: "2rem" }}>Loading accounts...</td></tr>
+                  <tr><td colSpan="7" style={{ textAlign: "center", padding: "2rem" }}>Loading accounts...</td></tr>
                 ) : filteredCustomers.length === 0 ? (
-                  <tr><td colSpan="6" style={{ textAlign: "center", padding: "2rem" }}>No customer accounts found.</td></tr>
+                  <tr><td colSpan="7" style={{ textAlign: "center", padding: "2rem" }}>No customer accounts found.</td></tr>
                 ) : (
                   filteredCustomers.slice(0, 50).map((c) => (
                     <tr key={c.id}>
@@ -148,6 +175,16 @@ const CustomersDesk = () => {
                       </td>
                       <td className="tnum" style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
                         {c.created_at ? new Date(c.created_at).toLocaleDateString() : "2026-09-01"}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <button
+                          onClick={() => handleDeleteCustomer(c)}
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: "var(--color-danger)", padding: "4px" }}
+                          title="Delete customer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </td>
                     </tr>
                   ))

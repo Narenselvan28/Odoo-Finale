@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { quotationsApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import DealFlowChatbot from "../components/chat/DealFlowChatbot";
 import {
   Sparkles,
@@ -143,8 +144,23 @@ const CustomerPortal = () => {
     }
   };
 
+  const { confirm } = useConfirm();
+
   const handleConfirmQuote = async () => {
-    if (!window.confirm("Do you officially accept and confirm this quotation order?")) return;
+    const isConfirmed = await confirm({
+      title: "Confirm Quotation Order",
+      message: `Do you officially accept and confirm Quotation #${quoteData?.quotation_number || id}?`,
+      details: [
+        `Total Payable Amount: ₹${currentTotal.toFixed(2)}`,
+        "Commercial terms and pricing will be locked.",
+        "Automatic warehouse inventory allocation and dispatch will be initiated.",
+      ],
+      confirmText: "Accept & Place Order",
+      type: "success",
+    });
+
+    if (!isConfirmed) return;
+
     try {
       setSubmitting(true);
       const res = await quotationsApi.negotiatePublic(id, { action: "CONFIRM_QUOTATION" });

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { approvalsApi, approvalAuditLogsApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
+import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import {
   CheckSquare,
@@ -18,6 +20,7 @@ import {
 
 const ApprovalsDesk = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const { user } = useAuth();
   const canApprove = true; // Enabled for all enterprise users
   const [approvals, setApprovals] = useState([]);
@@ -57,6 +60,21 @@ const ApprovalsDesk = () => {
       showToast({ message: "Please provide a governance justification reason.", type: "error" });
       return;
     }
+
+    const isApprove = actionStatus === "APPROVED";
+    const isConfirmed = await confirm({
+      title: `${isApprove ? "Approve" : "Reject"} Quotation Exception`,
+      message: `Are you sure you want to ${isApprove ? "APPROVE" : "REJECT"} approval request #${selectedApproval.id} for Quotation #${selectedApproval.quotation_id}?`,
+      details: [
+        `Action: ${actionStatus}`,
+        `Decision Justification: "${actionReason}"`,
+        isApprove ? "Quotation status will advance to APPROVED." : "Quotation status will be marked as REJECTED.",
+      ],
+      confirmText: isApprove ? "Confirm Approval" : "Confirm Rejection",
+      type: isApprove ? "success" : "danger",
+    });
+
+    if (!isConfirmed) return;
 
     try {
       setSubmitting(true);

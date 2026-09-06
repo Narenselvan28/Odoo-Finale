@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { productsApi, categoriesApi, priceListsApi, discountRulesApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import {
   Boxes,
   Layers,
@@ -17,6 +18,7 @@ import {
 
 const CatalogManagement = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState("products");
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -81,6 +83,26 @@ const CatalogManagement = () => {
       fetchData();
     } catch (err) {
       showToast({ title: "Creation error", message: err.response?.data?.message || err.message, type: "error" });
+    }
+  };
+
+  const handleDeleteProduct = async (prod) => {
+    const isConfirmed = await confirm({
+      title: "Delete Product Item",
+      message: `Are you sure you want to delete ${prod.name} (${prod.sku || "N/A"}) from the master catalog?`,
+      details: "This product will no longer be selectable for new CPQ quotations.",
+      confirmText: "Delete Product",
+      type: "danger",
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await productsApi.remove(prod.id);
+      showToast({ title: "Product Deleted", message: `${prod.name} deleted from catalog.`, type: "success" });
+      setProducts((prev) => prev.filter((p) => p.id !== prod.id));
+    } catch (err) {
+      showToast({ title: "Delete error", message: err.response?.data?.message || err.message, type: "error" });
     }
   };
 
@@ -154,13 +176,14 @@ const CatalogManagement = () => {
                   <th>Tax</th>
                   <th>Contract Type</th>
                   <th>Status</th>
+                  <th style={{ textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="8" style={{ textAlign: "center", padding: "2rem" }}>Loading catalog...</td></tr>
+                  <tr><td colSpan="9" style={{ textAlign: "center", padding: "2rem" }}>Loading catalog...</td></tr>
                 ) : filteredProducts.length === 0 ? (
-                  <tr><td colSpan="8" style={{ textAlign: "center", padding: "2rem" }}>No products found.</td></tr>
+                  <tr><td colSpan="9" style={{ textAlign: "center", padding: "2rem" }}>No products found.</td></tr>
                 ) : (
                   filteredProducts.map((p) => {
                     const base = Number(p.base_price) || 0;
@@ -188,6 +211,16 @@ const CatalogManagement = () => {
                           <span className={`badge ${p.is_active ? "badge-approved" : "badge-inactive"}`}>
                             {p.is_active ? "Active" : "Archived"}
                           </span>
+                        </td>
+                        <td style={{ textAlign: "right" }}>
+                          <button
+                            onClick={() => handleDeleteProduct(p)}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: "var(--color-danger)", padding: "4px" }}
+                            title="Delete product"
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </td>
                       </tr>
                     );

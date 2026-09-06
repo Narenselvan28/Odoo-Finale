@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { usersApi, rolesApi, approvalAuditLogsApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import {
   Users,
   ShieldCheck,
@@ -10,11 +11,13 @@ import {
   XCircle,
   Plus,
   Search,
-  Lock
+  Lock,
+  Trash2
 } from "lucide-react";
 
 const UsersAdmin = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -43,6 +46,30 @@ const UsersAdmin = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleDeleteUser = async (u) => {
+    const isConfirmed = await confirm({
+      title: "Revoke & Delete User",
+      message: `Are you sure you want to permanently delete user account "${u.name}" (${u.email})?`,
+      details: [
+        `User ID: #${u.id}`,
+        `Role: ${u.role || "Operator"}`,
+        "This user will immediately lose access to all DealFlow 360 workspaces.",
+      ],
+      confirmText: "Delete User",
+      type: "danger",
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      await usersApi.remove(u.id);
+      showToast({ title: "User Removed", message: `${u.name} removed successfully.`, type: "success" });
+      setUsers((prev) => prev.filter((item) => item.id !== u.id));
+    } catch (err) {
+      showToast({ title: "Delete failed", message: err.response?.data?.message || err.message, type: "error" });
+    }
+  };
 
   const filteredUsers = users.filter(
     (u) =>
@@ -131,11 +158,12 @@ const UsersAdmin = () => {
                   <th>Email</th>
                   <th>Role</th>
                   <th>Status</th>
+                  <th style={{ textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="5" style={{ textAlign: "center", padding: "2rem" }}>Loading team...</td></tr>
+                  <tr><td colSpan="6" style={{ textAlign: "center", padding: "2rem" }}>Loading team...</td></tr>
                 ) : filteredUsers.slice(0, 50).map((u) => (
                   <tr key={u.id}>
                     <td className="tnum" style={{ fontWeight: 600 }}>#{u.id}</td>
@@ -150,6 +178,16 @@ const UsersAdmin = () => {
                       ) : (
                         <span className="badge badge-inactive"><XCircle size={12} /> Suspended</span>
                       )}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      <button
+                        onClick={() => handleDeleteUser(u)}
+                        className="btn btn-ghost btn-sm"
+                        style={{ color: "var(--color-danger)", padding: "4px" }}
+                        title="Delete user"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))}

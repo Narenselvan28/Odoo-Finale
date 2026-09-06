@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { quotationsApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 import { Link } from "react-router-dom";
 import { formatCurrencyINR, formatCompactINR } from "../utils/formatters";
 import {
@@ -21,6 +22,7 @@ import {
 
 const QuotationsList = () => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -65,11 +67,20 @@ const QuotationsList = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm(`Are you sure you want to delete quotation #${id}?`)) return;
+  const handleDelete = async (id, quoteNumber) => {
+    const isConfirmed = await confirm({
+      title: "Delete Quotation",
+      message: `Are you sure you want to permanently delete quotation #${quoteNumber || id}?`,
+      details: "This will remove the quotation record, items, and associated event logs from the database.",
+      confirmText: "Delete Quotation",
+      type: "danger",
+    });
+
+    if (!isConfirmed) return;
+
     try {
       await quotationsApi.remove(id);
-      showToast({ message: `Quotation #${id} deleted`, type: "success" });
+      showToast({ message: `Quotation #${quoteNumber || id} deleted`, type: "success" });
       setQuotations((prev) => prev.filter((q) => q.id !== id));
     } catch (err) {
       showToast({ message: err.message, type: "error" });
@@ -278,7 +289,7 @@ const QuotationsList = () => {
                           <ExternalLink size={14} />
                         </Link>
                         <button
-                          onClick={() => handleDelete(q.id)}
+                          onClick={() => handleDelete(q.id, q.quotation_number)}
                           className="btn btn-ghost btn-sm"
                           style={{ color: "var(--color-danger)", padding: "4px" }}
                           title="Delete quote"
