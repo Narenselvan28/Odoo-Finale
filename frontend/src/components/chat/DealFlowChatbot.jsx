@@ -112,22 +112,37 @@ const DealFlowChatbot = ({ quoteId = null, customerId = null, initialContext = {
         context_override: initialContext,
       });
 
-      const data = res.data;
+      const data = res.data || {};
+      const responseObj = data.response || {};
+
+      const rawText =
+        responseObj.message ||
+        data.reply_text ||
+        data.message ||
+        (typeof data === "string" ? data : "");
+
+      const scenariosList = responseObj.scenarios || data.cards || data.scenarios || [];
+      const sectionsList = responseObj.sections || data.sections || [];
+      const quickRepliesList =
+        (data.actions && data.actions.length > 0)
+          ? data.actions.map((a) => (typeof a === "object" ? a.label : a))
+          : (data.quick_replies || [
+              "Quote status",
+              "Can I get a better discount?",
+              "Delivery estimate",
+            ]);
 
       const botMsg = {
         id: `bot_${Date.now()}`,
         sender: "bot",
-        text: data.reply_text || data.message || "I processed your request.",
-        intent: data.intent,
+        text: rawText || "I've analyzed your deal context. Let me know how else I can assist with this quotation.",
+        intent: data.primary_intent || data.intent,
         confidence: data.confidence,
-        cards: data.cards || [],
-        requiresConfirmation: data.requires_confirmation || false,
-        pendingAction: data.pending_action || null,
-        quickReplies: data.quick_replies || [
-          "Quote status",
-          "Can I get a better discount?",
-          "Delivery estimate",
-        ],
+        cards: scenariosList,
+        sections: sectionsList,
+        requiresConfirmation: Boolean(data.pending_proposal || data.requires_confirmation || data.pending_action || responseObj.type === "CONFIRMATION"),
+        pendingAction: data.pending_proposal || data.pending_action || null,
+        quickReplies: quickRepliesList,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
@@ -299,6 +314,35 @@ const DealFlowChatbot = ({ quoteId = null, customerId = null, initialContext = {
 
                   <div className={`df-msg-bubble ${msg.sender === "user" ? "user" : "bot"}`}>
                     <p style={{ margin: 0, whiteSpace: "pre-line" }}>{msg.text}</p>
+
+                    {/* Structured Sections / Metrics */}
+                    {msg.sections && msg.sections.length > 0 && (
+                      <div className="df-sections-list" style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                        {msg.sections.map((sec, sIdx) => (
+                          <div
+                            key={sIdx}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              background: "rgba(255,255,255,0.7)",
+                              padding: "6px 10px",
+                              borderRadius: "6px",
+                              fontSize: "12px",
+                              border: "1px solid rgba(226,232,240,0.8)",
+                            }}
+                          >
+                            <span style={{ color: "#475569", fontWeight: 500 }}>{sec.label}</span>
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                              {sec.current && <span style={{ color: "#94a3b8", textDecoration: "line-through" }}>{sec.current}</span>}
+                              <strong style={{ color: sec.status === "warning" ? "#d97706" : sec.status === "critical" ? "#dc2626" : "#4338ca" }}>
+                                {sec.proposed || sec.value || ""}
+                              </strong>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Scenario Cards */}
                     {msg.cards && msg.cards.length > 0 && (

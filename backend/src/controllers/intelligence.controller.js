@@ -300,7 +300,33 @@ const customerChat = async (req, res) => {
       body: flaskPayload,
     });
 
-    res.json(flaskRes);
+    // Normalize response fields for seamless UI consumption
+    const replyText =
+      flaskRes?.response?.message ||
+      flaskRes?.reply_text ||
+      flaskRes?.message ||
+      "I processed your request.";
+
+    const cards = flaskRes?.response?.scenarios || flaskRes?.cards || [];
+    const sections = flaskRes?.response?.sections || [];
+    const quickReplies =
+      flaskRes?.actions?.map((a) => a.label) ||
+      flaskRes?.quick_replies ||
+      [];
+    const requiresConfirmation = Boolean(
+      flaskRes?.pending_proposal || flaskRes?.response?.type === "CONFIRMATION"
+    );
+
+    res.json({
+      ...flaskRes,
+      reply_text: replyText,
+      message: replyText,
+      cards,
+      sections,
+      quick_replies: quickReplies.length > 0 ? quickReplies : undefined,
+      requires_confirmation: requiresConfirmation,
+      pending_action: flaskRes?.pending_proposal,
+    });
   } catch (err) {
     console.error("[IntelligenceController] customerChat error:", err.message);
     res.status(500).json({
