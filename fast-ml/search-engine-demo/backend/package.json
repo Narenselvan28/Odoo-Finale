@@ -1,0 +1,27 @@
+{
+  "name": "dealflow360-search-engine-demo",
+  "version": "1.0.0",
+  "description": "Modular Tokenized Full-Text Search Engine Demo with Inverted Index and Fuzzy Matching",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node ../test_search.js"
+  },
+  "keywords": [
+    "search-engine",
+    "inverted-index",
+    "fuzzy-matching",
+    "levenshtein",
+    "tokenization",
+    "mysql"
+  ],
+  "author": "DealFlow360 Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "fastest-levenshtein": "^1.0.16",
+    "mysql2": "^3.12.0"
+  }
+}

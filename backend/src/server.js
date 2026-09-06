@@ -15,6 +15,7 @@ const productRoutes      = require("./routes/product.routes");
 const quotationRoutes    = require("./routes/quotation.routes");
 const approvalRoutes     = require("./routes/approval.routes");
 const inventoryRoutes    = require("./routes/inventory.routes");
+const intelligenceRoutes = require("./routes/intelligence.routes");
 const miscRoutes         = require("./routes/misc.routes");
 
 const { authLimiter, publicPortalLimiter, apiLimiter } = require("./middleware/rateLimit.middleware");
@@ -60,6 +61,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/approvals", approvalRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/intelligence", intelligenceRoutes);
 app.use("/api", miscRoutes);
 
 // ── 404 handler ──────────────────────────────────────────────

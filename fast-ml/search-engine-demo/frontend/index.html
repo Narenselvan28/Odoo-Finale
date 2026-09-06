@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DealFlow360 Search Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>DealFlow360 Search Demo</h1>
+            <p class="subtitle">Tokenized Full-Text Inverted Index & Fuzzy Search Engine</p>
+        </header>
+
+        <!-- Search Bar -->
+        <section class="search-section">
+            <form id="search-form" class="search-form">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Search quotations, products, customers, messages (e.g. extnded warrnty)..." 
+                    autocomplete="off"
+                    autofocus
+                />
+                <button type="submit" id="search-btn">Search</button>
+            </form>
+
+            <!-- Quick Test Query Chips -->
+            <div class="quick-tests">
+                <span>Try:</span>
+                <button type="button" class="chip" data-query="extnded warrnty">extnded warrnty</button>
+                <button type="button" class="chip" data-query="custmer">custmer</button>
+                <button type="button" class="chip" data-query="delivry">delivry</button>
+                <button type="button" class="chip" data-query="QT-1001">QT-1001</button>
+                <button type="button" class="chip" data-query="laptop">laptop</button>
+                <button type="button" class="chip" data-query="randomxyz123">randomxyz123</button>
+            </div>
+        </section>
+
+        <!-- "Did you mean?" Suggestion -->
+        <div id="suggestion-box" class="suggestion-box" style="display: none;">
+            Did you mean: <a href="#" id="suggestion-link"></a>?
+        </div>
+
+        <!-- Metadata Info (Result count & execution time) -->
+        <div id="meta-info" class="meta-info" style="display: none;">
+            <span id="result-count">0</span> results · <span id="took-ms">0</span> ms
+        </div>
+
+        <!-- Status & Loading -->
+        <div id="status-message" class="status-message"></div>
+
+        <!-- Results Container -->
+        <main id="results-container" class="results-container"></main>
+
+        <!-- Footer / Reindex Control -->
+        <footer>
+            <button id="reindex-btn" class="secondary-btn">↻ Rebuild Index from MySQL</button>
+            <span id="reindex-status" class="reindex-status"></span>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

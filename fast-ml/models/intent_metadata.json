@@ -1,0 +1,555 @@
+{
+  "model_version": "customer-intent-v1.0",
+  "training_timestamp": "2026-09-05T17:54:27Z",
+  "selected_architecture": "sentence_transformer",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "classifier": "LogisticRegression",
+  "dataset_samples": 642,
+  "intents_count": 16,
+  "intents": [
+    "APPROVAL_STATUS",
+    "BETTER_DEAL",
+    "CONFIRM_QUOTATION",
+    "DELIVERY_REQUEST",
+    "DELIVERY_STATUS",
+    "DISCOUNT_IMPACT",
+    "DISCOUNT_REQUEST",
+    "GENERAL_HELP",
+    "NEGOTIATION_REASON",
+    "NEGOTIATION_STATUS",
+    "PRODUCT_ALTERNATIVE",
+    "PRODUCT_INFORMATION",
+    "QUOTE_PRICE_BREAKDOWN",
+    "QUOTE_SUMMARY",
+    "WHAT_CAN_I_CHANGE",
+    "WHAT_IF_SCENARIO"
+  ],
+  "intent_metadata": {
+    "QUOTE_SUMMARY": {
+      "description": "Customer requests a high-level summary or overview of their quotation.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "fetch_quote_summary"
+      ]
+    },
+    "QUOTE_PRICE_BREAKDOWN": {
+      "description": "Customer requests an itemized price breakdown explaining costs, taxes, fees, and margins.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "fetch_price_breakdown"
+      ]
+    },
+    "PRODUCT_INFORMATION": {
+      "description": "Customer asks questions about specific products, warranty, specifications, or line items.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "fetch_product_info"
+      ]
+    },
+    "DELIVERY_STATUS": {
+      "description": "Customer checks the current fulfillment status, estimated arrival, or delivery timeline.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "check_delivery_status"
+      ]
+    },
+    "DELIVERY_REQUEST": {
+      "description": "Customer asks for faster delivery, a specific delivery deadline, or rush shipping.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "simulate_delivery_change"
+      ]
+    },
+    "DISCOUNT_REQUEST": {
+      "description": "Customer requests a discount percentage, a lower price, or better commercial terms.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "evaluate_discount_request"
+      ]
+    },
+    "DISCOUNT_IMPACT": {
+      "description": "Customer asks what happens if a specific discount is applied, its effect on approval, margin, or terms.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "simulate_discount_impact"
+      ]
+    },
+    "WHAT_IF_SCENARIO": {
+      "description": "Customer wants to simulate changes to quantity, price, discount, or delivery variables.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "run_what_if_simulation"
+      ]
+    },
+    "BETTER_DEAL": {
+      "description": "Customer asks for options to make the deal cheaper, find better terms, or optimize pricing.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "find_better_deal_scenarios"
+      ]
+    },
+    "PRODUCT_ALTERNATIVE": {
+      "description": "Customer inquires about alternative, cheaper, or substitute products in place of current items.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "suggest_product_alternatives"
+      ]
+    },
+    "NEGOTIATION_REASON": {
+      "description": "Customer provides a business reason or justification for their negotiation request.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "record_negotiation_reason"
+      ]
+    },
+    "APPROVAL_STATUS": {
+      "description": "Customer asks about the approval status, review stage, or who is approving their request.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "check_approval_status"
+      ]
+    },
+    "NEGOTIATION_STATUS": {
+      "description": "Customer checks current round of negotiation, pending terms, or history of requests.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "fetch_negotiation_history"
+      ]
+    },
+    "WHAT_CAN_I_CHANGE": {
+      "description": "Customer asks what quotation parameters they are allowed to negotiate or modify.",
+      "threshold": 0.75,
+      "supported_actions": [
+        "list_negotiable_parameters"
+      ]
+    },
+    "CONFIRM_QUOTATION": {
+      "description": "Customer confirms, accepts, or submits a proposed scenario or quotation change.",
+      "threshold": 0.8,
+      "supported_actions": [
+        "confirm_pending_proposal"
+      ]
+    },
+    "GENERAL_HELP": {
+      "description": "Customer asks for assistance, says hello, or asks what the chatbot can do.",
+      "threshold": 0.7,
+      "supported_actions": [
+        "show_help_menu"
+      ]
+    }
+  },
+  "metrics": {
+    "accuracy_percent": 93.02,
+    "macro_precision": 0.9347,
+    "macro_recall": 0.9297,
+    "macro_f1": 0.9298,
+    "inference_latency_ms": 0.005
+  },
+  "baseline_comparison": {
+    "tfidf_accuracy_percent": 92.25,
+    "tfidf_macro_f1": 0.9201,
+    "sentence_transformer_accuracy_percent": 93.02,
+    "sentence_transformer_macro_f1": 0.9298
+  },
+  "confusion_matrix": [
+    [
+      8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      6,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      7,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      7,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      7,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      8,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      8,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      8,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      9,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      6,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      6
+    ]
+  ],
+  "classification_report": {
+    "APPROVAL_STATUS": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8.0
+    },
+    "BETTER_DEAL": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1-score": 0.75,
+      "support": 8.0
+    },
+    "CONFIRM_QUOTATION": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8.0
+    },
+    "DELIVERY_REQUEST": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8.0
+    },
+    "DELIVERY_STATUS": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8.0
+    },
+    "DISCOUNT_IMPACT": {
+      "precision": 0.8888888888888888,
+      "recall": 1.0,
+      "f1-score": 0.9411764705882353,
+      "support": 8.0
+    },
+    "DISCOUNT_REQUEST": {
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1-score": 0.9333333333333333,
+      "support": 8.0
+    },
+    "GENERAL_HELP": {
+      "precision": 0.7777777777777778,
+      "recall": 0.875,
+      "f1-score": 0.8235294117647058,
+      "support": 8.0
+    },
+    "NEGOTIATION_REASON": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8.0
+    },
+    "NEGOTIATION_STATUS": {
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1-score": 0.9333333333333333,
+      "support": 8.0
+    },
+    "PRODUCT_ALTERNATIVE": {
+      "precision": 0.8888888888888888,
+      "recall": 1.0,
+      "f1-score": 0.9411764705882353,
+      "support": 8.0
+    },
+    "PRODUCT_INFORMATION": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8.0
+    },
+    "QUOTE_PRICE_BREAKDOWN": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8.0
+    },
+    "QUOTE_SUMMARY": {
+      "precision": 0.9,
+      "recall": 1.0,
+      "f1-score": 0.9473684210526315,
+      "support": 9.0
+    },
+    "WHAT_CAN_I_CHANGE": {
+      "precision": 0.75,
+      "recall": 0.75,
+      "f1-score": 0.75,
+      "support": 8.0
+    },
+    "WHAT_IF_SCENARIO": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1-score": 0.8571428571428571,
+      "support": 8.0
+    },
+    "accuracy": 0.9302325581395349,
+    "macro avg": {
+      "precision": 0.9347222222222222,
+      "recall": 0.9296875,
+      "f1-score": 0.9298162686127083,
+      "support": 129.0
+    },
+    "weighted avg": {
+      "precision": 0.9344530577088718,
+      "recall": 0.9302325581395349,
+      "f1-score": 0.929952331809917,
+      "support": 129.0
+    }
+  }
+}

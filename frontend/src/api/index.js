@@ -210,5 +210,19 @@ export const alertsApi = {
   remove: (id) => api.delete(`/alerts/${id}`),
 };
 
+// 🧠 DealFlow360 Intelligence & Machine Learning API
+export const intelligenceApi = {
+  analyzeQuote: (data) => api.post("/intelligence/analyze-quote", data),
+  suggestDiscount: (data) => api.post("/intelligence/suggest-discount", data),
+  predictWinProbability: (data) => api.post("/intelligence/predict-win", data),
+  health: () => api.get("/intelligence/health"),
+};
+
+// 💬 Customer Deal Assistant Chat API
+export const chatApi = {
+  sendMessage: (data) => api.post("/intelligence/chat", data),
+  getHistory: (quoteId) => api.get(`/intelligence/chat/${quoteId}`),
+};
+
 // Backward compatibility alias
 export const userApi = usersApi;

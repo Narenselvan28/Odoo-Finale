@@ -19,6 +19,7 @@ import {
   Download,
   CheckCircle,
 } from "lucide-react";
+import DealFlowChatbot from "../components/chat/DealFlowChatbot";
 
 const CustomerPortal = () => {
   const { id } = useParams();
@@ -731,6 +732,18 @@ const CustomerPortal = () => {
           </div>
         </div>
       </div>
+
+      {/* 💬 Context-Aware Customer Deal Assistant */}
+      <DealFlowChatbot
+        quoteId={id}
+        customerId={quoteData?.customer_id}
+        initialContext={{
+          quote_id: id,
+          deal_id: quoteData?.quotation_number,
+          total_amount: currentTotal,
+          customer_tier: quoteData?.Customer?.CustomerTier?.name || "GOLD",
+        }}
+      />
     </div>
   );
 };
