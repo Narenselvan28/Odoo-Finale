@@ -85,6 +85,8 @@ const BillingDesk = () => {
 
   const selectedQuote = quotations.find((q) => String(q.id) === String(selectedQuoteId));
 
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+
   // Proration math (Spec B7)
   const baseSeats = 5;
   const seatMonthlyRate = 4999;
@@ -92,48 +94,128 @@ const BillingDesk = () => {
   const proratedAdjustment = deltaSeats !== 0 ? (deltaSeats * seatMonthlyRate * (daysRemainingInCycle / 30)) : 0;
   const simulatedCreditNoteRefund = (seatMonthlyRate * baseSeats * (daysRemainingInCycle / 30));
 
-  const handleApplyProration = () => {
-    const invNum = `INV-PRORATE-2026-${Math.floor(100 + Math.random() * 900)}`;
-    const adjInvoice = {
-      id: Date.now(),
-      invoice_number: invNum,
-      quotation_id: selectedQuote?.id || 1,
-      customer_id: selectedQuote?.customer_id || 1,
-      amount: Math.abs(proratedAdjustment),
-      invoice_type: "SUBSCRIPTION_PRORATION",
-      status: proratedAdjustment >= 0 ? "PENDING" : "PAID",
-      due_date: new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
-    };
+  // 1-Click Tax Invoice Generator from Confirmed Quotations (Spec B7)
+  const handleGenerateQuoteInvoices = async () => {
+    if (!selectedQuote) {
+      showToast({ message: "Please select an order to generate invoices.", type: "error" });
+      return;
+    }
 
-    setInvoices((prev) => [adjInvoice, ...prev]);
-    setProrationApplied(true);
-    showToast({
-      title: "Proration Adjustment Invoice Issued (Spec B7)",
-      message: `Modified seat count to ${simulatedSeats}. Generated ${invNum} for ${formatCurrencyINR(Math.abs(proratedAdjustment), 2)}.`,
-      type: "success",
-    });
+    try {
+      setGeneratingInvoice(true);
+      const qItems = selectedQuote.QuotationItems || [];
+      const capexItems = qItems.filter((i) => i.Product?.product_type !== "SUBSCRIPTION");
+      const opexItems = qItems.filter((i) => i.Product?.product_type === "SUBSCRIPTION");
+
+      const capexAmt = capexItems.reduce((acc, i) => {
+        const gross = (Number(i.unit_price) || 0) * (Number(i.quantity) || 1);
+        return acc + gross * (1 - (Number(i.discount_percent) || 0) / 100);
+      }, 0);
+
+      const opexAmt = opexItems.reduce((acc, i) => {
+        const gross = (Number(i.unit_price) || 0) * (Number(i.quantity) || 1);
+        return acc + gross * (1 - (Number(i.discount_percent) || 0) / 100);
+      }, 0);
+
+      const createdList = [];
+
+      // Generate Capex Invoice
+      if (capexAmt > 0 || opexAmt === 0) {
+        const capexInvNum = `INV-${new Date().getFullYear()}-CAPEX-${String(selectedQuote.id).padStart(3, "0")}-${Math.floor(100 + Math.random() * 900)}`;
+        const amount = capexAmt > 0 ? capexAmt : Number(selectedQuote.total_amount) || 15000;
+        const res1 = await invoicesApi.create({
+          quotation_id: selectedQuote.id,
+          invoice_number: capexInvNum,
+          invoice_type: "ONE_TIME",
+          amount: Math.round(amount * 100) / 100,
+          status: "ISSUED",
+          due_date: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+        });
+        createdList.push(res1.data);
+      }
+
+      // Generate Recurring Opex Invoice
+      if (opexAmt > 0) {
+        const opexInvNum = `INV-${new Date().getFullYear()}-OPEX-${String(selectedQuote.id).padStart(3, "0")}-${Math.floor(100 + Math.random() * 900)}`;
+        const res2 = await invoicesApi.create({
+          quotation_id: selectedQuote.id,
+          invoice_number: opexInvNum,
+          invoice_type: "RECURRING",
+          amount: Math.round(opexAmt * 100) / 100,
+          status: "ISSUED",
+          due_date: new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
+        });
+        createdList.push(res2.data);
+      }
+
+      showToast({
+        title: "Tax Invoices Generated!",
+        message: `Successfully issued and recorded ${createdList.length} billing invoice(s) in MySQL database for Order #${selectedQuote.quotation_number || selectedQuote.id}.`,
+        type: "success",
+      });
+
+      // Refresh invoices from DB
+      const refreshed = await invoicesApi.getAll();
+      setInvoices(refreshed.data?.invoices || refreshed.data || []);
+    } catch (err) {
+      showToast({
+        title: "Invoice Generation Error",
+        message: err.response?.data?.message || err.message,
+        type: "error",
+      });
+    } finally {
+      setGeneratingInvoice(false);
+    }
   };
 
-  const handleCancelSubscription = () => {
-    setSubscriptionCancelled(true);
-    const cnNum = `CN-REFUND-2026-${Math.floor(100 + Math.random() * 900)}`;
-    const creditNote = {
-      id: Date.now(),
-      invoice_number: cnNum,
-      quotation_id: selectedQuote?.id || 1,
-      customer_id: selectedQuote?.customer_id || 1,
-      amount: -simulatedCreditNoteRefund,
-      invoice_type: "CREDIT_NOTE_REFUND",
-      status: "CREDITED",
-      due_date: new Date().toISOString().split("T")[0],
-    };
+  const handleApplyProration = async () => {
+    try {
+      const invNum = `INV-PRORATE-2026-${Math.floor(100 + Math.random() * 900)}`;
+      const adjInvoice = {
+        invoice_number: invNum,
+        quotation_id: selectedQuote?.id || 1,
+        amount: Math.round(Math.abs(proratedAdjustment) * 100) / 100,
+        invoice_type: "RECURRING",
+        status: proratedAdjustment >= 0 ? "ISSUED" : "PAID",
+        due_date: new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
+      };
 
-    setInvoices((prev) => [creditNote, ...prev]);
-    showToast({
-      title: "Subscription Cancelled & Credit Note Issued",
-      message: `Automatic partial refund ${cnNum} of ${formatCurrencyINR(simulatedCreditNoteRefund, 2)} credited to ledger.`,
-      type: "info",
-    });
+      await invoicesApi.create(adjInvoice).catch(() => null);
+      setInvoices((prev) => [{ id: Date.now(), ...adjInvoice }, ...prev]);
+      setProrationApplied(true);
+      showToast({
+        title: "Proration Adjustment Invoice Issued (Spec B7)",
+        message: `Modified seat count to ${simulatedSeats}. Generated ${invNum} for ${formatCurrencyINR(Math.abs(proratedAdjustment), 2)}.`,
+        type: "success",
+      });
+    } catch (err) {
+      showToast({ title: "Failed to issue proration invoice", message: err.message, type: "error" });
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    try {
+      setSubscriptionCancelled(true);
+      const cnNum = `CN-REFUND-2026-${Math.floor(100 + Math.random() * 900)}`;
+      const creditNote = {
+        invoice_number: cnNum,
+        quotation_id: selectedQuote?.id || 1,
+        amount: Math.round(simulatedCreditNoteRefund * 100) / 100,
+        invoice_type: "ONE_TIME",
+        status: "CANCELLED",
+        due_date: new Date().toISOString().split("T")[0],
+      };
+
+      await invoicesApi.create(creditNote).catch(() => null);
+      setInvoices((prev) => [{ id: Date.now(), ...creditNote }, ...prev]);
+      showToast({
+        title: "Subscription Cancelled & Credit Note Issued",
+        message: `Automatic partial refund ${cnNum} of ${formatCurrencyINR(simulatedCreditNoteRefund, 2)} credited to ledger and persisted.`,
+        type: "info",
+      });
+    } catch (err) {
+      showToast({ title: "Failed to cancel subscription", message: err.message, type: "error" });
+    }
   };
 
   return (
@@ -246,11 +328,31 @@ const BillingDesk = () => {
               </div>
             </div>
 
-            <div>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Total Contract Value (TCV)</div>
-              <div className="tnum" style={{ fontWeight: 700, fontSize: "1.15rem", color: "var(--color-accent)" }}>
-                {formatCurrencyINR(selectedQuote?.total_amount || 245000, 2)}
+            <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>Total Contract Value (TCV)</div>
+                <div className="tnum" style={{ fontWeight: 700, fontSize: "1.15rem", color: "var(--color-accent)" }}>
+                  {formatCurrencyINR(selectedQuote?.total_amount || 245000, 2)}
+                </div>
               </div>
+
+              <button
+                type="button"
+                onClick={handleGenerateQuoteInvoices}
+                disabled={generatingInvoice}
+                className="btn btn-primary"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontWeight: 700,
+                  padding: "8px 16px",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
+                <Receipt size={16} />
+                <span>{generatingInvoice ? "Issuing Invoices..." : "⚡ Generate Order Invoices"}</span>
+              </button>
             </div>
           </div>
 

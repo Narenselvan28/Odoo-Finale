@@ -1736,15 +1736,38 @@ const PricingStudio = () => {
               </button>
 
               {loadedQuoteId && (
-                <Link
-                  to={`/portal/${loadedQuoteId}`}
-                  target="_blank"
-                  className="btn btn-secondary"
-                  style={{ width: "100%", justifyContent: "center", color: "var(--orange)" }}
-                >
-                  <ArrowUpRight size={15} />
-                  <span>Open Customer Negotiation Portal</span>
-                </Link>
+                <>
+                  <Link
+                    to={`/portal/${loadedQuoteId}`}
+                    target="_blank"
+                    className="btn btn-secondary"
+                    style={{ width: "100%", justifyContent: "center", color: "var(--orange)" }}
+                  >
+                    <ArrowUpRight size={15} />
+                    <span>Open Customer Negotiation Portal</span>
+                  </Link>
+
+                  {(loadedQuoteStatus === "CONFIRMED" || loadedQuoteStatus === "APPROVED") && (
+                    <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                      <Link
+                        to="/inventory"
+                        className="btn btn-secondary btn-sm"
+                        style={{ flex: 1, justifyContent: "center", fontSize: "0.72rem", padding: "6px 8px" }}
+                      >
+                        <Truck size={13} />
+                        <span>Fulfillment Split</span>
+                      </Link>
+                      <Link
+                        to="/billing"
+                        className="btn btn-secondary btn-sm"
+                        style={{ flex: 1, justifyContent: "center", fontSize: "0.72rem", padding: "6px 8px" }}
+                      >
+                        <Receipt size={13} />
+                        <span>Issue Invoices</span>
+                      </Link>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

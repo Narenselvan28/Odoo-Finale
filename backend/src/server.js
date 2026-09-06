@@ -17,31 +17,50 @@ const approvalRoutes     = require("./routes/approval.routes");
 const inventoryRoutes    = require("./routes/inventory.routes");
 const miscRoutes         = require("./routes/misc.routes");
 
+const { authLimiter, publicPortalLimiter, apiLimiter } = require("./middleware/rateLimit.middleware");
+const { sqlInjectionMiddleware } = require("./middleware/sqlInjection.middleware");
+
 const app = express();
 
-// ── Middleware ───────────────────────────────────────────────
+// ── Security Headers ─────────────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next();
+});
+
+// ── Base Middleware ──────────────────────────────────────────
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"));
+
+// ── SQL Injection Defense Gateway ────────────────────────────
+app.use(sqlInjectionMiddleware);
+
+// ── Global API Rate Limiting ─────────────────────────────────
+app.use("/api", apiLimiter);
 
 // ── Health check ─────────────────────────────────────────────
 app.get("/api/health", (req, res) =>
   res.json({ status: "ok", time: new Date().toISOString() })
 );
 
-// ── Routes ───────────────────────────────────────────────────
-app.use("/api/auth",                   authRoutes);
-app.use("/api/users",                  userRoutes);
-app.use("/api/roles",                  roleRoutes);
-app.use("/api/customer-tiers",         customerTierRoutes);
-app.use("/api/customers",              customerRoutes);
-app.use("/api/categories",             categoryRoutes);
-app.use("/api/products",               productRoutes);
-app.use("/api/quotations",             quotationRoutes);
-app.use("/api/approvals",              approvalRoutes);
-app.use("/api/inventory",              inventoryRoutes);
-app.use("/api",                        miscRoutes);
+// ── Tier-Specific Rate Limiting & Routes ──────────────────────
+app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/quotations/public", publicPortalLimiter);
+app.use("/api/quotations", quotationRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/roles", roleRoutes);
+app.use("/api/customer-tiers", customerTierRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/approvals", approvalRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api", miscRoutes);
 
 // ── 404 handler ──────────────────────────────────────────────
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
