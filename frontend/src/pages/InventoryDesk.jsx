@@ -64,11 +64,17 @@ const InventoryDesk = () => {
     fetchData();
   }, []);
 
-  const filteredInventory = inventory.filter(
-    (item) =>
-      item.product_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.warehouse_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredInventory = useMemo(() => {
+    if (!searchQuery.trim()) return inventory;
+    const q = searchQuery.toLowerCase().trim();
+    return inventory.filter((item) => {
+      const pName = (item.Product?.name || item.product_name || "").toLowerCase();
+      const pSku = (item.Product?.sku || "").toLowerCase();
+      const wName = (item.Warehouse?.name || item.warehouse_name || "").toLowerCase();
+      const wLoc = (item.Warehouse?.location || "").toLowerCase();
+      return pName.includes(q) || pSku.includes(q) || wName.includes(q) || wLoc.includes(q);
+    });
+  }, [inventory, searchQuery]);
 
   const selectedQuote = quotations.find((q) => String(q.id) === String(selectedQuoteId));
 
@@ -428,14 +434,28 @@ const InventoryDesk = () => {
                 ) : filteredInventory.length === 0 ? (
                   <tr><td colSpan="6" style={{ textAlign: "center", padding: "2rem" }}>No inventory records.</td></tr>
                 ) : (
-                  filteredInventory.slice(0, 50).map((inv) => {
+                  filteredInventory.slice(0, 100).map((inv) => {
                     const avail = Number(inv.available_quantity) || 0;
                     const res = Number(inv.reserved_quantity) || 0;
+                    const prodName = inv.Product?.name || inv.product_name || `Product #${inv.product_id}`;
+                    const prodSku = inv.Product?.sku;
+                    const whName = inv.Warehouse?.name || inv.warehouse_name || `Warehouse #${inv.warehouse_id}`;
+                    const whLoc = inv.Warehouse?.location;
                     return (
                       <tr key={inv.id}>
                         <td className="tnum" style={{ fontWeight: 600 }}>#{inv.id}</td>
-                        <td style={{ fontWeight: 600 }}>{inv.product_name || `Product #${inv.product_id}`}</td>
-                        <td>{inv.warehouse_name || `Warehouse #${inv.warehouse_id}`}</td>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{prodName}</div>
+                          {prodSku && (
+                            <div style={{ fontSize: "0.72rem", color: "var(--color-text-muted)" }}>SKU: {prodSku}</div>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600 }}>{whName}</div>
+                          {whLoc && (
+                            <div style={{ fontSize: "0.72rem", color: "var(--color-text-muted)" }}>{whLoc}</div>
+                          )}
+                        </td>
                         <td className="tnum" style={{ fontWeight: 600, fontSize: "0.9375rem" }}>{avail} units</td>
                         <td className="tnum" style={{ color: "var(--color-text-muted)" }}>{res} units</td>
                         <td>
@@ -508,17 +528,27 @@ const InventoryDesk = () => {
                 </tr>
               </thead>
               <tbody>
-                {allocations.slice(0, 50).map((a) => (
-                  <tr key={a.id}>
-                    <td className="tnum">#{a.id}</td>
-                    <td className="tnum" style={{ color: "var(--color-accent)", fontWeight: 600 }}>
-                      Item #{a.quotation_item_id}
-                    </td>
-                    <td>Warehouse #{a.warehouse_id}</td>
-                    <td className="tnum" style={{ fontWeight: 600 }}>{a.allocated_quantity || 1} units</td>
-                    <td><span className="badge badge-confirmed">Allocated</span></td>
-                  </tr>
-                ))}
+                {allocations.slice(0, 50).map((a) => {
+                  const wh = warehouses.find((w) => w.id === a.warehouse_id);
+                  return (
+                    <tr key={a.id}>
+                      <td className="tnum">#{a.id}</td>
+                      <td className="tnum" style={{ color: "var(--color-accent)", fontWeight: 600 }}>
+                        Item #{a.quotation_item_id}
+                      </td>
+                      <td>
+                        <span style={{ fontWeight: 600 }}>{wh ? wh.name : `Warehouse #${a.warehouse_id}`}</span>
+                        {wh?.location && (
+                          <span style={{ fontSize: "0.72rem", color: "var(--color-text-muted)", marginLeft: "6px" }}>
+                            ({wh.location})
+                          </span>
+                        )}
+                      </td>
+                      <td className="tnum" style={{ fontWeight: 600 }}>{a.allocated_quantity || 1} units</td>
+                      <td><span className="badge badge-confirmed">Allocated</span></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
