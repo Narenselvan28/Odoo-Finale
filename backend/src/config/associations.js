@@ -32,6 +32,10 @@ const Alert                 = require("../models/Alert.model");
 Role.hasMany(User, { foreignKey: "role_id" });
 User.belongsTo(Role, { foreignKey: "role_id" });
 
+// Customer → User
+Customer.hasMany(User, { foreignKey: "customer_id" });
+User.belongsTo(Customer, { as: "Customer", foreignKey: "customer_id" });
+
 // Customer → CustomerTier
 CustomerTier.hasMany(Customer, { foreignKey: "tier_id" });
 Customer.belongsTo(CustomerTier, { foreignKey: "tier_id" });

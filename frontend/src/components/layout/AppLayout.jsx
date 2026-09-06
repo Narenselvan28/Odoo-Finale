@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useKeyboardShortcuts } from "../../context/KeyboardShortcutsContext";
 import {
   LayoutDashboard,
   Calculator,
@@ -18,10 +19,15 @@ import {
   BarChart3,
   User,
   RefreshCw,
+  Command,
+  Clock,
 } from "lucide-react";
+import UserProfileModal from "../common/UserProfileModal";
 
 const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
   const { user, logout } = useAuth();
+  const { openShortcuts } = useKeyboardShortcuts();
+  const [profileOpen, setProfileOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -70,7 +76,7 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
     { label: "Invoices & Billing", path: "/billing", icon: Receipt },
     { label: "Deal Telemetry", path: "/intelligence", icon: Activity },
     { label: "Reports & Exports", path: "/reporting", icon: BarChart3 },
-    { label: "Admin & Audit", path: "/users", icon: ShieldCheck },
+    { label: "Users & Profile", path: "/users", icon: Users },
   ];
 
   // Category determination for breadcrumbs & page header
@@ -90,8 +96,8 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
     if (path.includes("/intelligence") || path.includes("/reporting")) {
       return "Executive Telemetry & Intelligence";
     }
-    if (path.includes("/users")) {
-      return "System Governance & Audit";
+    if (path.includes("/users") || path.includes("/profile")) {
+      return "User Directory & Account Details";
     }
     return "Enterprise Command Center";
   };
@@ -110,8 +116,9 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
         </div>
 
         <div className="header-actions">
-          {/* User Persona Chip */}
+          {/* User Persona Chip (Clickable for Profile) */}
           <div
+            onClick={() => setProfileOpen(true)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -122,12 +129,88 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
               borderRadius: "var(--radius-sm)",
               fontSize: "11px",
               fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.15s ease",
             }}
+            title="Click to view & edit your User Profile"
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--orange)")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
           >
             <User size={13} color="var(--orange)" />
             <span style={{ color: "var(--text)" }}>{user?.name || "User"}</span>
             <span className="badge badge-orange">{roleMeta.label}</span>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setProfileOpen(true)}
+            className="btn btn-ghost btn-sm"
+            style={{ display: "inline-flex", gap: "5px", alignItems: "center", fontSize: "11.5px" }}
+            title="Open User Profile & Account Details"
+          >
+            <User size={12} color="var(--orange)" />
+            <span>Profile</span>
+          </button>
+
+          {/* Inactivity Security Badge */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 8px",
+              background: "var(--bg-secondary)",
+              border: "1px solid var(--border)",
+              borderRadius: "var(--radius-sm)",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              cursor: "help",
+            }}
+            title="Enterprise Security Policy: 15-minute inactivity session termination active."
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor: "#10b981",
+                display: "inline-block",
+                boxShadow: "0 0 4px #10b981",
+              }}
+            />
+            <span style={{ fontWeight: 600, color: "var(--text-secondary)" }}>15m Idle Guard</span>
+          </div>
+
+          {/* Keyboard Shortcuts Palette Launcher */}
+          <button
+            type="button"
+            onClick={openShortcuts}
+            className="btn btn-ghost btn-sm"
+            style={{
+              display: "inline-flex",
+              gap: "6px",
+              alignItems: "center",
+              fontSize: "11.5px",
+              padding: "4px 8px",
+              border: "1px solid var(--border-light)",
+            }}
+            title="Open Keyboard Shortcuts (Press ⌘K or ?)"
+          >
+            <Command size={12} color="var(--orange)" />
+            <span style={{ fontWeight: 600 }}>Shortcuts</span>
+            <kbd
+              style={{
+                fontSize: "9.5px",
+                padding: "1px 4px",
+                backgroundColor: "var(--border-light)",
+                borderRadius: "3px",
+                color: "var(--text)",
+                fontWeight: 700,
+              }}
+            >
+              ⌘K
+            </kbd>
+          </button>
 
           <button
             onClick={() => window.location.reload()}
@@ -186,6 +269,9 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
       <main style={{ minHeight: "520px", flex: 1, paddingBottom: "24px" }}>
         {children}
       </main>
+
+      {/* ===== USER PROFILE MODAL (Accessible by all users) ===== */}
+      <UserProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 };

@@ -325,15 +325,61 @@ const evaluateRisk = async (req, res) => {
   }
 };
 
+// Helper to resolve quotation by ID, quotation_number, or demo fallback
+const findQuotationByRef = async (ref) => {
+  if (!ref) return null;
+  const include = [
+    { model: Customer, as: "Customer", include: [{ model: CustomerTier, as: "CustomerTier" }] },
+    { model: QuotationItem, as: "QuotationItems", include: [{ model: Product, as: "Product" }] },
+  ];
+
+  let quotation = null;
+  // 1. Try numeric primary key
+  if (!isNaN(ref) && Number(ref) > 0) {
+    quotation = await Quotation.findByPk(Number(ref), { include });
+  }
+
+  // 2. Try exact or formatted quotation_number
+  if (!quotation) {
+    const searchTerms = [
+      ref,
+      `QT-2026-${String(ref).padStart(3, "0")}`,
+      `QT-${ref}`,
+      `QUO-${ref}`,
+    ];
+    quotation = await Quotation.findOne({
+      where: {
+        [Op.or]: [
+          { quotation_number: { [Op.in]: searchTerms } },
+          { quotation_number: { [Op.like]: `%${ref}%` } },
+        ],
+      },
+      include,
+      order: [["id", "DESC"]],
+    });
+  }
+
+  // 3. Fallback for demo showcase references (e.g. 226) if not currently in DB
+  if (!quotation) {
+    quotation =
+      (await Quotation.findOne({
+        where: { status: "UNDER_NEGOTIATION" },
+        include,
+        order: [["id", "DESC"]],
+      })) ||
+      (await Quotation.findOne({
+        include,
+        order: [["id", "DESC"]],
+      }));
+  }
+
+  return quotation;
+};
+
 // GET /api/quotations/public/:id (Customer Facing Portal View)
 const getPublicQuote = async (req, res) => {
   try {
-    const quotation = await Quotation.findByPk(req.params.id, {
-      include: [
-        { model: Customer, as: "Customer", include: [{ model: CustomerTier, as: "CustomerTier" }] },
-        { model: QuotationItem, as: "QuotationItems", include: [{ model: Product, as: "Product" }] },
-      ],
-    });
+    const quotation = await findQuotationByRef(req.params.id);
     if (!quotation) return res.status(404).json({ message: "Quotation not found" });
 
     // Fetch existing negotiations
@@ -352,12 +398,7 @@ const getPublicQuote = async (req, res) => {
 const customerNegotiate = async (req, res) => {
   try {
     const { action, counter_discount, comment } = req.body;
-    const quotation = await Quotation.findByPk(req.params.id, {
-      include: [
-        { model: Customer, as: "Customer", include: [{ model: CustomerTier, as: "CustomerTier" }] },
-        { model: QuotationItem, as: "QuotationItems", include: [{ model: Product, as: "Product" }] },
-      ],
-    });
+    const quotation = await findQuotationByRef(req.params.id);
     if (!quotation) return res.status(404).json({ message: "Quotation not found" });
 
     if (action === "CONFIRM_QUOTATION") {

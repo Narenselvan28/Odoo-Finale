@@ -11,6 +11,8 @@ export const authApi = {
 export const usersApi = {
   getAll: () => api.get("/users"),
   getById: (id) => api.get(`/users/${id}`),
+  getProfile: () => api.get("/users/profile/me"),
+  updateProfile: (data) => api.put("/users/profile/me", data),
   update: (id, data) => api.put(`/users/${id}`, data),
   remove: (id) => api.delete(`/users/${id}`),
 };
