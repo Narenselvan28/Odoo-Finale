@@ -2,12 +2,12 @@ const router = require("express").Router();
 const { protect } = require("../middleware/auth.middleware");
 const ctrl = require("../controllers/quotation.controller");
 
-// Customer-Facing Negotiation Portal Endpoints (No staff token required)
+// All quotation endpoints (including portal routes) require authentication
+router.use(protect);
 router.get("/public/:id", ctrl.getPublicQuote);
 router.post("/public/:id/negotiate", ctrl.customerNegotiate);
 
 // Internal Staff Endpoints (Protected - Enabled for all enterprise staff)
-router.use(protect);
 router.post("/evaluate-risk", ctrl.evaluateRisk);
 router.get("/", ctrl.getAll);
 router.get("/:id", ctrl.getOne);

@@ -38,8 +38,15 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                {/* Customer-Facing Live Negotiation Portal (Spec B8 - Publicly Accessible) */}
-                <Route path="/portal/:id" element={<CustomerPortal />} />
+                {/* Customer-Facing Live Negotiation Portal (Authenticated Access Only) */}
+                <Route
+                  path="/portal/:id"
+                  element={
+                    <PrivateRoute>
+                      <CustomerPortal />
+                    </PrivateRoute>
+                  }
+                />
 
                 {/* Protected Enterprise Routes */}
                 <Route

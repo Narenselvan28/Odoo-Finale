@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Building2,
   UserCheck,
-  ExternalLink,
 } from "lucide-react";
 
 const Login = () => {
@@ -37,7 +36,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.email || !form.password) {
-      setError("Please enter both email and password.");
+      const msg = "Please enter both email and password.";
+      setError(msg);
+      showToast({
+        title: "Missing Credentials",
+        message: msg,
+        type: "warning",
+      });
       return;
     }
 
@@ -59,7 +64,13 @@ const Login = () => {
         navigate("/dashboard");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password. Please try again.");
+      const msg = err.response?.data?.message || "Invalid email or password. Please try again.";
+      setError(msg);
+      showToast({
+        title: "Sign In Failed",
+        message: msg,
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -225,36 +236,6 @@ const Login = () => {
               Register Operator Account
             </Link>
           </div>
-        </div>
-
-        {/* Public Client Quotation Portal Quick Access */}
-        <div
-          style={{
-            marginTop: "1.25rem",
-            padding: "0.75rem 1rem",
-            backgroundColor: "var(--orange-pale, #fff7ed)",
-            borderRadius: "8px",
-            border: "1px solid var(--orange, #ea580c)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#9a3412" }}>
-              Public Negotiation Portal
-            </div>
-            <div style={{ fontSize: "0.7rem", color: "#7c2d12" }}>
-              Access public client quote (#1) without signing in
-            </div>
-          </div>
-          <Link
-            to="/portal/1"
-            className="btn btn-sm btn-primary"
-            style={{ fontSize: "0.72rem", padding: "4px 10px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
-          >
-            Open Portal <ExternalLink size={11} />
-          </Link>
         </div>
       </div>
     </div>

@@ -47,15 +47,21 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
-      setError("Please fill in all required fields.");
+      const msg = "Please fill in all required fields.";
+      setError(msg);
+      showToast({ title: "Incomplete Form", message: msg, type: "warning" });
       return;
     }
     if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      const msg = "Password must be at least 6 characters.";
+      setError(msg);
+      showToast({ title: "Weak Password", message: msg, type: "warning" });
       return;
     }
     if (accountType === "customer" && !form.company_name) {
-      setError("Please provide your company or organization name.");
+      const msg = "Please provide your company or organization name.";
+      setError(msg);
+      showToast({ title: "Missing Company", message: msg, type: "warning" });
       return;
     }
 
@@ -91,7 +97,13 @@ const Register = () => {
       }
     } catch (err) {
       const errs = err.response?.data?.errors;
-      setError(errs ? errs.map((e) => e.msg).join(", ") : err.response?.data?.message || "Registration failed");
+      const msg = errs ? errs.map((e) => e.msg).join(", ") : err.response?.data?.message || "Registration failed";
+      setError(msg);
+      showToast({
+        title: "Registration Failed",
+        message: msg,
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
