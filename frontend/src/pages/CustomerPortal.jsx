@@ -731,34 +731,6 @@ const CustomerPortal = () => {
           </div>
         </div>
       </div>
-
-      {/* ===== INSTITUTIONAL FOOTER (ref ui.txt) ===== */}
-      <footer className="footer">
-        <div>
-          <div className="brand">✦ <span>DealFlow</span> 360</div>
-          <div className="sub">Enterprise CPQ & Sales Operations</div>
-        </div>
-        <div>
-          <h6>Security & Compliance</h6>
-          <ul>
-            <li>SOC2 Type II Certified</li>
-            <li>256-bit TLS Encrypted</li>
-            <li>Audit Trail Monitored</li>
-          </ul>
-        </div>
-        <div>
-          <h6>Support</h6>
-          <ul>
-            <li>commercial@dealflow360.com</li>
-            <li>Net 30 Terms Desk</li>
-            <li>Director Escalation Hub</li>
-          </ul>
-        </div>
-      </footer>
-
-      <div className="footer-bottom">
-        © 2026 <span>DealFlow 360</span> · All rights reserved
-      </div>
     </div>
   );
 };
