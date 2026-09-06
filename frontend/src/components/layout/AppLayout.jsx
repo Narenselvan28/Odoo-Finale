@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useKeyboardShortcuts } from "../../context/KeyboardShortcutsContext";
@@ -21,13 +21,20 @@ import {
   RefreshCw,
   Command,
   Clock,
+  ChevronDown,
+  ExternalLink,
+  Shield,
+  Building2,
+  CheckCircle2,
 } from "lucide-react";
 import UserProfileModal from "../common/UserProfileModal";
 
 const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
   const { user, logout } = useAuth();
   const { openShortcuts } = useKeyboardShortcuts();
-  const [profileOpen, setProfileOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,7 +44,19 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
     localStorage.removeItem("dealflow_sidebar_collapsed");
   }, []);
 
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = () => {
+    setUserDropdownOpen(false);
     logout();
     navigate("/login");
   };
@@ -48,17 +67,19 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
   const getRoleBadge = (role) => {
     switch (role) {
       case "admin":
-        return { label: "Superuser Admin" };
+        return { label: "Executive Admin", bg: "#fff7ed", color: "#ea580c", border: "#fdba74" };
       case "sales_manager":
-        return { label: "Sales Director" };
+        return { label: "Sales Director", bg: "#f5f3ff", color: "#7c3aed", border: "#c4b5fd" };
       case "sales_rep":
-        return { label: "Account Executive" };
+        return { label: "Account Executive", bg: "#f0f9ff", color: "#0284c7", border: "#7dd3fc" };
       case "finance_manager":
-        return { label: "Finance Controller" };
+        return { label: "Finance Controller", bg: "#ecfdf5", color: "#059669", border: "#6ee7b7" };
       case "warehouse_manager":
-        return { label: "Supply Chain Lead" };
+        return { label: "Supply Chain Lead", bg: "#fffbeb", color: "#d97706", border: "#fcd34d" };
+      case "customer":
+        return { label: "Customer Client", bg: "#fdf2f8", color: "#db2777", border: "#fbcfe8" };
       default:
-        return { label: role };
+        return { label: role || "Operator", bg: "#f1f5f9", color: "#475569", border: "#cbd5e1" };
     }
   };
 
@@ -116,69 +137,322 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
         </div>
 
         <div className="header-actions">
-          {/* User Persona Chip (Clickable for Profile) */}
-          <div
-            onClick={() => setProfileOpen(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 10px",
-              background: "var(--bg-secondary)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-sm)",
-              fontSize: "11px",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-            }}
-            title="Click to view & edit your User Profile"
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--orange)")}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-          >
-            <User size={13} color="var(--orange)" />
-            <span style={{ color: "var(--text)" }}>{user?.name || "User"}</span>
-            <span className="badge badge-orange">{roleMeta.label}</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setProfileOpen(true)}
-            className="btn btn-ghost btn-sm"
-            style={{ display: "inline-flex", gap: "5px", alignItems: "center", fontSize: "11.5px" }}
-            title="Open User Profile & Account Details"
-          >
-            <User size={12} color="var(--orange)" />
-            <span>Profile</span>
-          </button>
-
-          {/* Inactivity Security Badge */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 8px",
-              background: "var(--bg-secondary)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-sm)",
-              fontSize: "11px",
-              color: "var(--text-muted)",
-              cursor: "help",
-            }}
-            title="Enterprise Security Policy: 15-minute inactivity session termination active."
-          >
-            <span
+          {/* Interactive User Icon & Profile Dropdown */}
+          <div style={{ position: "relative" }} ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
               style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: "#10b981",
-                display: "inline-block",
-                boxShadow: "0 0 4px #10b981",
+                display: "flex",
+                alignItems: "center",
+                gap: "7px",
+                padding: "5px 12px",
+                background: userDropdownOpen ? "var(--orange-pale, #fff7ed)" : "var(--bg-secondary)",
+                border: userDropdownOpen ? "1.5px solid var(--orange)" : "1px solid var(--border)",
+                borderRadius: "var(--radius-sm)",
+                fontSize: "12px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                color: "var(--text)",
               }}
-            />
-            <span style={{ fontWeight: 600, color: "var(--text-secondary)" }}>15m Idle Guard</span>
+              title="Click to view User Details & Logout options"
+            >
+              <div
+                style={{
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "50%",
+                  backgroundColor: "var(--orange)",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                }}
+              >
+                {(user?.name || "U")[0]?.toUpperCase()}
+              </div>
+              <span style={{ color: "var(--text)", fontWeight: 700 }}>{user?.name || "User"}</span>
+              <span
+                style={{
+                  fontSize: "10.5px",
+                  padding: "1px 6px",
+                  borderRadius: "4px",
+                  backgroundColor: roleMeta.bg,
+                  color: roleMeta.color,
+                  border: `1px solid ${roleMeta.border}`,
+                  fontWeight: 700,
+                }}
+              >
+                {roleMeta.label}
+              </span>
+              <ChevronDown
+                size={13}
+                color="var(--text-muted)"
+                style={{
+                  transform: userDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s ease",
+                }}
+              />
+            </button>
+
+            {/* Dropdown Menu Modal/Popover */}
+            {userDropdownOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 8px)",
+                  right: 0,
+                  width: "320px",
+                  backgroundColor: "#ffffff",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border)",
+                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)",
+                  zIndex: 9999,
+                  overflow: "hidden",
+                  animation: "fadeIn 0.15s ease-out",
+                }}
+              >
+                {/* User Details Header */}
+                <div
+                  style={{
+                    padding: "1rem",
+                    backgroundColor: "var(--bg-secondary)",
+                    borderBottom: "1px solid var(--border-light)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div
+                      style={{
+                        width: "42px",
+                        height: "42px",
+                        borderRadius: "10px",
+                        backgroundColor: "var(--orange)",
+                        color: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "18px",
+                        fontWeight: 800,
+                        boxShadow: "0 2px 6px rgba(234, 88, 12, 0.25)",
+                      }}
+                    >
+                      {(user?.name || "U")[0]?.toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: "14px",
+                          color: "var(--text-heading)",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {user?.name || "System User"}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--text-secondary)",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {user?.email || "user@dealflow360.com"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metadata Chips */}
+                  <div style={{ marginTop: "10px", display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        backgroundColor: roleMeta.bg,
+                        color: roleMeta.color,
+                        border: `1px solid ${roleMeta.border}`,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {roleMeta.label}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid var(--border-light)",
+                        color: "var(--text-muted)",
+                        fontWeight: 600,
+                      }}
+                      className="tnum"
+                    >
+                      ID: #{user?.id || 1}
+                    </span>
+                  </div>
+
+                  {/* Organization */}
+                  <div style={{ marginTop: "6px", fontSize: "11px", color: "var(--text-muted)" }}>
+                    Organization:{" "}
+                    <strong style={{ color: "var(--text-heading)" }}>
+                      {user?.Customer?.name || (user?.role === "customer" ? "Client Account" : "DealFlow 360 Enterprise")}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Session Guard Indicator */}
+                <div
+                  style={{
+                    padding: "8px 1rem",
+                    borderBottom: "1px solid var(--border-light)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    fontSize: "11.5px",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span
+                      style={{
+                        width: "7px",
+                        height: "7px",
+                        borderRadius: "50%",
+                        backgroundColor: "#10b981",
+                        display: "inline-block",
+                      }}
+                    />
+                    <span>Active Session</span>
+                  </div>
+                  <span style={{ fontSize: "10.5px", color: "var(--text-muted)" }}>15m Inactivity Guard</span>
+                </div>
+
+                {/* Navigation Links */}
+                <div style={{ padding: "6px" }}>
+                  <Link
+                    to="/profile"
+                    onClick={() => setUserDropdownOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "13px",
+                      color: "var(--text)",
+                      textDecoration: "none",
+                      fontWeight: 500,
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--bg-secondary)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    <User size={15} color="var(--orange)" />
+                    <span>My Profile & Account Details</span>
+                  </Link>
+
+                  <Link
+                    to="/users"
+                    onClick={() => setUserDropdownOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "13px",
+                      color: "var(--text)",
+                      textDecoration: "none",
+                      fontWeight: 500,
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--bg-secondary)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    <Users size={15} color="#6366f1" />
+                    <span>All Users Directory & RBAC</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserDropdownOpen(false);
+                      setProfileOpen(true);
+                    }}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "13px",
+                      color: "var(--text)",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: 500,
+                      textAlign: "left",
+                      transition: "background 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--bg-secondary)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                  >
+                    <Shield size={15} color="var(--color-success)" />
+                    <span>Edit Profile Preferences</span>
+                  </button>
+                </div>
+
+                {/* Logout Button */}
+                <div
+                  style={{
+                    padding: "8px",
+                    borderTop: "1px solid var(--border-light)",
+                    backgroundColor: "#fafafa",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "12.5px",
+                      fontWeight: 700,
+                      color: "#dc2626",
+                      backgroundColor: "#fef2f2",
+                      border: "1px solid #fecaca",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#fee2e2";
+                      e.currentTarget.style.borderColor = "#f87171";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#fef2f2";
+                      e.currentTarget.style.borderColor = "#fecaca";
+                    }}
+                  >
+                    <LogOut size={14} />
+                    <span>Log Out / End Session</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Keyboard Shortcuts Palette Launcher */}
