@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { approvalsApi, approvalAuditLogsApi } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import {
   CheckSquare,
