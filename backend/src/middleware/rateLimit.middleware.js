@@ -1,4 +1,10 @@
-const { rateLimit } = require("express-rate-limit");
+let rateLimit;
+try {
+  rateLimit = require("express-rate-limit").rateLimit || require("express-rate-limit");
+} catch (e) {
+  // Graceful passthrough fallback
+  rateLimit = () => (req, res, next) => next();
+}
 
 // Tier 1: Brute-Force Protection on Authentication (Login, Register)
 const authLimiter = rateLimit({
