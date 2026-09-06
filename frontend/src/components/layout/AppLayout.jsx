@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import DealFlowChatbot from "../chat/DealFlowChatbot";
 import {
   LayoutDashboard,
   Calculator,
@@ -187,9 +186,6 @@ const AppLayout = ({ children, pageTitle = "Enterprise Studio", subtitle }) => {
       <main style={{ minHeight: "520px", flex: 1, paddingBottom: "24px" }}>
         {children}
       </main>
-
-      {/* 💬 Global DealFlow360 Conversational Deal Assistant */}
-      <DealFlowChatbot />
     </div>
   );
 };
